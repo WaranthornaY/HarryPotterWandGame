@@ -43,13 +43,11 @@
         let isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
         let peer, conn;
         
-        // Tracking Matrix
         let spellTrail = [];
         let handX = 0, handY = 0;         
         let isPhoneDrawing = false;
         let currentBackgroundColor = [11, 11, 20];
 
-        // Remember previous orientation values to calculate speed (Delta)
         let lastPitch = null;
         let lastRoll = null;
 
@@ -116,20 +114,17 @@
                 wandPad.style.background = "#111";
             });
 
-            // Fallback to Bulletproof DeviceOrientation (Guaranteed to stream on all devices)
             window.addEventListener('deviceorientation', (event) => {
                 if (conn && conn.open) {
-                    let currentPitch = event.beta;  // -180 to 180
-                    let currentRoll = event.gamma;   // -90 to 90
+                    let currentPitch = event.beta;  
+                    let currentRoll = event.gamma;   
 
                     if (lastPitch === null) lastPitch = currentPitch;
                     if (lastRoll === null) lastRoll = currentRoll;
 
-                    // Delta tracking: How fast did the angle shift between frames?
                     let deltaRoll = currentRoll - lastRoll;
                     let deltaPitch = currentPitch - lastPitch;
 
-                    // Handle edge cases where compass loops over
                     if (Math.abs(deltaRoll) > 50) deltaRoll = 0;
                     if (Math.abs(deltaPitch) > 50) deltaPitch = 0;
 
@@ -148,6 +143,12 @@
                 if (data.type === "spell_success") {
                     wandPad.style.backgroundColor = data.color;
                     document.getElementById('wand-status').innerText = data.spellName.toUpperCase() + "!";
+                    
+                    // --- PHYSICAL VIBRATION FEEDBACK ---
+                    if (navigator.vibrate) {
+                        navigator.vibrate([150, 50, 100]); // Thump-thump heartbeat effect!
+                    }
+
                     setTimeout(() => {
                         wandPad.style.backgroundColor = "#111";
                         document.getElementById('wand-status').innerText = "Wand Linked ✨";
@@ -169,12 +170,10 @@
                 }
                 
                 if (data.type === "angle_delta") {
-                    // Turn swift twists and slashes into continuous screen movement
-                    // Multiplying by 4 makes it highly sensitive to quick wrist slashes!
+                    // FIX: Changed "handY += data.dPitch" to "handY -= data.dPitch" to un-invert the vertical controls!
                     handX += data.dRoll * 4.5;
-                    handY += data.dPitch * 4.5;
+                    handY -= data.dPitch * 4.5; 
 
-                    // Keep the pointer pinned within your game frame
                     handX = constrain(handX, 0, width);
                     handY = constrain(handY, 0, height);
 
@@ -194,16 +193,14 @@
             if (isMobile) return;
             background(currentBackgroundColor[0], currentBackgroundColor[1], currentBackgroundColor[2]);
 
-            // Draw Magic Spell Path
             noFill();
             strokeWeight(12);
             for (let i = 1; i < spellTrail.length; i++) {
                 let alpha = map(i, 0, spellTrail.length, 0, 255);
-                stroke(255, 215, 0, alpha); // Fading golden spark trail
+                stroke(255, 215, 0, alpha); 
                 line(spellTrail[i-1].x, spellTrail[i-1].y, spellTrail[i].x, spellTrail[i].y);
             }
 
-            // Draw Wand Tip Focus Cursor
             fill(255, 255, 200);
             noStroke();
             circle(handX, handY, 30);
@@ -221,15 +218,15 @@
             let totalX = endPoint.x - startPoint.x;
             let totalY = endPoint.y - startPoint.y;
 
-            // Simple Directional Swipe Classifier
+            // Updated boundaries to align with the un-inverted tracker
             if (totalY > 100 && Math.abs(totalX) < 100) {
-                triggerSpellResult("Avada Kedavra", [0, 150, 50]); // Downward Slash = Green
+                triggerSpellResult("Avada Kedavra", [0, 150,  green])
             } else if (totalY < -100 && Math.abs(totalX) < 100) {
                 triggerSpellResult("Ascendio", [100, 150, 255]);   // Upward Slash = Blue
             } else if (totalX > 100 && Math.abs(totalY) < 100) {
                 triggerSpellResult("Incendio", [255, 69, 0]);      // Right Slash = Fire Red
             } else {
-                triggerSpellResult("Lumos", [255, 255, 255]);      // Default circle/shake = White
+                triggerSpellResult("Lumos", [255, 255, 255]);      // Default = White
             }
 
             spellTrail = []; 
