@@ -28,8 +28,7 @@
         </div>
         
         <div id="phone-setup" style="display:none;">
-            <!-- Separate Permission Trigger for iOS -->
-            <button id="permission-btn" onclick="requestDeviceSensors()">1. Enable Phone Motion ⚡</button>
+            <button id="permission-btn" onclick="requestDeviceSensors()">1. Enable Phone Sensors ⚡</button>
             <input type="text" id="join-id" placeholder="Enter Laptop ID">
             <button id="connect-btn" onclick="connectToLaptop()">2. Link Wand ✨</button>
         </div>
@@ -37,18 +36,22 @@
 
     <div id="wand-pad">
         <h2 id="wand-status" style="color: #666;">Wand Disconnected</h2>
-        <p style="color: #aaa; text-align: center; padding: 0 20px; font-size: 18px;">PRESS & HOLD your thumb down here, slash your phone UP quickly, then let go!</p>
+        <p style="color: #aaa; text-align: center; padding: 0 20px; font-size: 18px;">PRESS & HOLD your thumb down, slash your phone UP/DOWN/LEFT/RIGHT, then release to cast!</p>
     </div>
 
     <script>
         let isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
         let peer, conn;
         
+        // Tracking Matrix
         let spellTrail = [];
         let handX = 0, handY = 0;         
-        let velocityX = 0, velocityY = 0; 
         let isPhoneDrawing = false;
         let currentBackgroundColor = [11, 11, 20];
+
+        // Remember previous orientation values to calculate speed (Delta)
+        let lastPitch = null;
+        let lastRoll = null;
 
         window.onload = function() {
             peer = new Peer();
@@ -57,8 +60,7 @@
                 document.getElementById('title').innerText = "🧙‍♂️ Wand Controller";
                 document.getElementById('phone-setup').style.display = "block";
                 
-                // Show the permission unlock button explicitly if on iOS
-                if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     document.getElementById('permission-btn').style.display = "block";
                 }
             } else {
@@ -74,14 +76,13 @@
             }
         };
 
-        // Explicitly ask for iOS motion permission on button click
         function requestDeviceSensors() {
-            if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                DeviceMotionEvent.requestPermission()
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission()
                     .then(state => {
                         if (state === 'granted') {
-                            document.getElementById('permission-btn').style.innerText = "Motion Enabled Ready ✅";
                             document.getElementById('permission-btn').style.background = "#555";
+                            document.getElementById('permission-btn').innerText = "Sensors Unlocked ✅";
                         }
                     })
                     .catch(console.error);
@@ -115,20 +116,31 @@
                 wandPad.style.background = "#111";
             });
 
-            window.addEventListener('devicemotion', (event) => {
+            // Fallback to Bulletproof DeviceOrientation (Guaranteed to stream on all devices)
+            window.addEventListener('deviceorientation', (event) => {
                 if (conn && conn.open) {
-                    let accX = event.acceleration.x || 0;
-                    let accY = event.acceleration.y || 0;
+                    let currentPitch = event.beta;  // -180 to 180
+                    let currentRoll = event.gamma;   // -90 to 90
 
-                    // Lowered the deadzone from 0.3 to 0.1 so it catches lighter, slower movements too
-                    if (Math.abs(accX) < 0.1) accX = 0;
-                    if (Math.abs(accY) < 0.1) accY = 0;
+                    if (lastPitch === null) lastPitch = currentPitch;
+                    if (lastRoll === null) lastRoll = currentRoll;
+
+                    // Delta tracking: How fast did the angle shift between frames?
+                    let deltaRoll = currentRoll - lastRoll;
+                    let deltaPitch = currentPitch - lastPitch;
+
+                    // Handle edge cases where compass loops over
+                    if (Math.abs(deltaRoll) > 50) deltaRoll = 0;
+                    if (Math.abs(deltaPitch) > 50) deltaPitch = 0;
 
                     conn.send({
-                        type: "physics_motion",
-                        accX: accX,
-                        accY: accY
+                        type: "angle_delta",
+                        dRoll: deltaRoll,
+                        dPitch: deltaPitch
                     });
+
+                    lastPitch = currentPitch;
+                    lastRoll = currentRoll;
                 }
             });
 
@@ -153,22 +165,16 @@
                     isPhoneDrawing = data.drawing;
                     if (!isPhoneDrawing) {
                         evaluateSpell(); 
-                        velocityX = 0; velocityY = 0; 
                     }
                 }
                 
-                if (data.type === "physics_motion") {
-                    // Increased the sensitivity multiplier from 0.4 to 1.2 to boost cursor speed!
-                    velocityX += data.accX * 1.2; 
-                    velocityY -= data.accY * 1.2; 
+                if (data.type === "angle_delta") {
+                    // Turn swift twists and slashes into continuous screen movement
+                    // Multiplying by 4 makes it highly sensitive to quick wrist slashes!
+                    handX += data.dRoll * 4.5;
+                    handY += data.dPitch * 4.5;
 
-                    // Adjusted friction slightly to keep the movement smooth but fast
-                    velocityX *= 0.85;
-                    velocityY *= 0.85;
-
-                    handX += velocityX;
-                    handY += velocityY;
-
+                    // Keep the pointer pinned within your game frame
                     handX = constrain(handX, 0, width);
                     handY = constrain(handY, 0, height);
 
@@ -188,38 +194,42 @@
             if (isMobile) return;
             background(currentBackgroundColor[0], currentBackgroundColor[1], currentBackgroundColor[2]);
 
+            // Draw Magic Spell Path
             noFill();
-            strokeWeight(10);
+            strokeWeight(12);
             for (let i = 1; i < spellTrail.length; i++) {
                 let alpha = map(i, 0, spellTrail.length, 0, 255);
-                stroke(255, 215, 0, alpha); 
+                stroke(255, 215, 0, alpha); // Fading golden spark trail
                 line(spellTrail[i-1].x, spellTrail[i-1].y, spellTrail[i].x, spellTrail[i].y);
             }
 
+            // Draw Wand Tip Focus Cursor
             fill(255, 255, 200);
             noStroke();
-            circle(handX, handY, 25);
+            circle(handX, handY, 30);
         }
 
         function evaluateSpell() {
-            if (spellTrail.length < 5) { // Lowered length requirements for testing
-                spellTrail = []; 
+            if (spellTrail.length < 5) {
+                spellTrail = [];
                 return;
             }
 
             let startPoint = spellTrail[0];
             let endPoint = spellTrail[spellTrail.length - 1];
-            let verticalDrop = endPoint.y - startPoint.y;
+            
+            let totalX = endPoint.x - startPoint.x;
+            let totalY = endPoint.y - startPoint.y;
 
-            // Debug logger to show tracking values in your computer's browser console
-            console.log("Spell cast vertical movement: " + verticalDrop);
-
-            if (verticalDrop > 80) {
-                triggerSpellResult("Avada Kedavra", [0, 150, 50]); 
-            } else if (verticalDrop < -80) {
-                triggerSpellResult("Ascendio", [100, 150, 255]); 
+            // Simple Directional Swipe Classifier
+            if (totalY > 100 && Math.abs(totalX) < 100) {
+                triggerSpellResult("Avada Kedavra", [0, 150, 50]); // Downward Slash = Green
+            } else if (totalY < -100 && Math.abs(totalX) < 100) {
+                triggerSpellResult("Ascendio", [100, 150, 255]);   // Upward Slash = Blue
+            } else if (totalX > 100 && Math.abs(totalY) < 100) {
+                triggerSpellResult("Incendio", [255, 69, 0]);      // Right Slash = Fire Red
             } else {
-                triggerSpellResult("Lumos", [255, 255, 255]); 
+                triggerSpellResult("Lumos", [255, 255, 255]);      // Default circle/shake = White
             }
 
             spellTrail = []; 
