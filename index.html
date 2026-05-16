@@ -7,13 +7,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        body { margin: 0; background: #0b0b14; color: white; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; user-select: none; -webkit-user-select: none; }
+        body { margin: 0; background: #0b0b14; color: white; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; }
+        
+        /* FIX: Removed body-wide user-select none so laptop text can be highlighted normally */
         #ui-layer { position: absolute; z-index: 10; text-align: center; background: rgba(11, 11, 20, 0.95); padding: 30px; border-radius: 15px; border: 2px solid #8a2be2; width: 80%; max-width: 400px; }
         input, button { padding: 15px; font-size: 18px; margin: 10px 0; border-radius: 8px; border: none; text-align: center; width: 100%; box-sizing: border-box; }
         input { background: #222; color: white; border: 1px solid #8a2be2; }
         button { background: #8a2be2; color: white; cursor: pointer; font-weight: bold; }
         #permission-btn { background: #00ffcc; color: #000; display: none; }
-        #wand-pad { width: 100vw; height: 100vh; display: none; background: #111; justify-content: center; align-items: center; flex-direction: column; touch-action: none; }
+        
+        /* Keep user-select none strictly on the phone wand interface so holding your thumb doesn't highlight text */
+        #wand-pad { width: 100vw; height: 100vh; display: none; background: #111; justify-content: center; align-items: center; flex-direction: column; touch-action: none; user-select: none; -webkit-user-select: none; }
+        
+        #copy-btn { background: #333; color: #fff; font-size: 14px; padding: 8px 12px; width: auto; display: inline-block; margin-top: 5px; border: 1px solid #555; }
+        #copy-btn:hover { background: #444; }
     </style>
 </head>
 <body>
@@ -23,8 +30,11 @@
         
         <div id="laptop-setup" style="display:none;">
             <p>On your PHONE, open this exact website link.</p>
-            <h1 id="room-id" style="color: #00ffff; font-size: 42px;">Generating...</h1>
-            <p>Waiting for your phone wand to connect...</p>
+            <p>Then type this Secret Wand ID into your phone:</p>
+            <!-- Clean text styling allowing direct mouse cursor highlighting -->
+            <h1 id="room-id" style="color: #00ffff; font-size: 42px; margin-bottom: 5px; -webkit-user-select: text; user-select: text;">Generating...</h1>
+            <button id="copy-btn" onclick="copyRoomID()">📋 Copy ID</button>
+            <p style="margin-top: 20px;">Waiting for your phone wand to connect...</p>
         </div>
         
         <div id="phone-setup" style="display:none;">
@@ -73,6 +83,17 @@
                 });
             }
         };
+
+        // Automatic clipboard utility for the laptop layout
+        function copyRoomID() {
+            let roomIdText = document.getElementById('room-id').innerText;
+            if(roomIdText && roomIdText !== "Generating...") {
+                navigator.clipboard.writeText(roomIdText);
+                let btn = document.getElementById('copy-btn');
+                btn.innerText = "✅ Copied!";
+                setTimeout(() => { btn.innerText = "📋 Copy ID"; }, 2000);
+            }
+        }
 
         function requestDeviceSensors() {
             if (typeof DeviceOrientationEvent.requestPermission === 'function') {
@@ -144,9 +165,8 @@
                     wandPad.style.backgroundColor = data.color;
                     document.getElementById('wand-status').innerText = data.spellName.toUpperCase() + "!";
                     
-                    // --- PHYSICAL VIBRATION FEEDBACK ---
                     if (navigator.vibrate) {
-                        navigator.vibrate([150, 50, 100]); // Thump-thump heartbeat effect!
+                        navigator.vibrate([150, 50, 100]); 
                     }
 
                     setTimeout(() => {
@@ -170,7 +190,6 @@
                 }
                 
                 if (data.type === "angle_delta") {
-                    // FIX: Changed "handY += data.dPitch" to "handY -= data.dPitch" to un-invert the vertical controls!
                     handX += data.dRoll * 4.5;
                     handY -= data.dPitch * 4.5; 
 
@@ -218,15 +237,14 @@
             let totalX = endPoint.x - startPoint.x;
             let totalY = endPoint.y - startPoint.y;
 
-            // Updated boundaries to align with the un-inverted tracker
             if (totalY > 100 && Math.abs(totalX) < 100) {
-                triggerSpellResult("Avada Kedavra", [0, 150,  green])
+                triggerSpellResult("Avada Kedavra", [0, 150, 50]); 
             } else if (totalY < -100 && Math.abs(totalX) < 100) {
-                triggerSpellResult("Ascendio", [100, 150, 255]);   // Upward Slash = Blue
+                triggerSpellResult("Ascendio", [100, 150, 255]);   
             } else if (totalX > 100 && Math.abs(totalY) < 100) {
-                triggerSpellResult("Incendio", [255, 69, 0]);      // Right Slash = Fire Red
+                triggerSpellResult("Incendio", [255, 69, 0]);      
             } else {
-                triggerSpellResult("Lumos", [255, 255, 255]);      // Default = White
+                triggerSpellResult("Lumos", [255, 255, 255]);      
             }
 
             spellTrail = []; 
