@@ -7,11 +7,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Goudy+Bookletter+1911&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;700&family=Goudy+Bookletter+1911&display=swap');
 
         body { 
             margin: 0; 
-            background: #0d0906; 
+            background: #090604; 
             color: #e6dfd3; 
             font-family: 'Goudy Bookletter 1911', serif; 
             overflow: hidden; 
@@ -20,68 +20,117 @@
             justify-content: center; 
             align-items: center; 
             height: 100vh;
+            /* Atmospheric dark magic vignetting */
+            background-image: radial-gradient(circle, #16100b 0%, #050302 100%);
         }
         
         #ui-layer { 
             position: absolute; 
             z-index: 10; 
             text-align: center; 
-            background: #1c140e; 
-            background-image: radial-gradient(rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
-            padding: 35px; 
-            border-radius: 4px; 
+            /* Spellbound parchment aesthetic texture */
+            background: #1e140d;
+            background-image: radial-gradient(rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.6) 100%);
+            padding: 40px; 
+            border-radius: 12px; 
             border: 2px solid #b8934b; 
-            width: 90%; 
-            max-width: 450px; 
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(184, 147, 75, 0.2); 
+            width: 85%; 
+            max-width: 440px; 
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9), 
+                        inset 0 0 30px rgba(184, 147, 75, 0.25),
+                        0 0 0 1px rgba(184, 147, 75, 0.1);
+            transition: all 0.5s ease;
         }
 
-        h1, h2, h3 {
+        h1 {
+            font-family: 'Cinzel Decorative', serif;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: #f3cf8c;
+            text-shadow: 0 0 15px rgba(243, 207, 140, 0.4);
+        }
+
+        h2, h3 {
             font-family: 'Cinzel', serif;
             letter-spacing: 2px;
             color: #dcae5b;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        input, button { 
+        p {
+            color: #b5a48c;
+            font-size: 17px;
+            line-height: 1.5;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        input { 
             padding: 15px; 
-            font-size: 18px; 
+            font-size: 16px; 
+            margin: 15px 0; 
+            border-radius: 6px; 
+            text-align: center; 
+            width: 100%; 
+            box-sizing: border-box; 
+            font-family: 'Cinzel', serif;
+            background: #0f0a06; 
+            color: #f3cf8c; 
+            border: 1px solid #5a4522; 
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #dcae5b;
+            box-shadow: 0 0 10px rgba(220, 174, 91, 0.3), inset 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        button { 
+            padding: 16px; 
+            font-size: 16px; 
             margin: 12px 0; 
-            border-radius: 4px; 
+            border-radius: 6px; 
             border: none; 
             text-align: center; 
             width: 100%; 
             box-sizing: border-box; 
             font-family: 'Cinzel', serif;
-        }
-
-        input { 
-            background: #0d0906; 
-            color: #e6dfd3; 
-            border: 1px solid #5a4522; 
-        }
-
-        button { 
-            background: #84231b; 
+            background: linear-gradient(135deg, #60140e 0%, #3d0905 100%); 
             color: #e6dfd3; 
             cursor: pointer; 
             font-weight: bold; 
             border: 1px solid #b8934b;
-            transition: all 0.3s; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
         }
 
         button:hover { 
-            background: #b8934b; 
-            color: #0d0906;
-            box-shadow: 0 0 15px rgba(184, 147, 75, 0.4); 
+            background: linear-gradient(135deg, #84231b 0%, #520f0a 100%); 
+            color: #fff;
+            box-shadow: 0 0 20px rgba(184, 147, 75, 0.5); 
+            transform: translateY(-1px);
         }
 
-        #permission-btn { background: #b8934b; color: #0d0906; display: none; }
+        button:active {
+            transform: translateY(1px);
+        }
+
+        #permission-btn { 
+            background: linear-gradient(135deg, #b8934b 0%, #7e612c 100%); 
+            color: #0d0906; 
+            border: 1px solid #f3cf8c;
+            display: none; 
+        }
+        #permission-btn:hover {
+            background: linear-gradient(135deg, #dcae5b 0%, #9b7839 100%);
+        }
         
         #wand-pad { 
             width: 100vw; 
             height: 100vh; 
             display: none; 
-            background: #120c08; 
+            background: #0f0a07; 
+            background-image: radial-gradient(circle, #1a110a 0%, #050302 100%);
             justify-content: center; 
             align-items: center; 
             flex-direction: column; 
@@ -90,44 +139,117 @@
             -webkit-user-select: none; 
         }
 
-        #copy-btn { background: #0d0906; color: #b8934b; font-size: 14px; padding: 8px 12px; width: auto; display: inline-block; margin-top: 5px; border: 1px solid #5a4522; }
-        #voice-btn { background: #5a1813; color: #e6dfd3; width: 85%; max-width: 280px; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); margin-top: 20px; z-index: 20; }
-        #calibrate-btn { background: #273a2a; color: #e6dfd3; width: 85%; max-width: 280px; font-size: 16px; margin-top: 10px; border: 1px solid #48694d;}
+        #copy-btn { 
+            background: #0d0906; 
+            color: #b8934b; 
+            font-size: 13px; 
+            padding: 8px 16px; 
+            width: auto; 
+            display: inline-block; 
+            margin-top: 5px; 
+            border: 1px solid #4a381b; 
+        }
+        
+        #voice-btn { 
+            background: linear-gradient(135deg, #46120e 0%, #200503 100%); 
+            color: #e6dfd3; 
+            width: 80%; 
+            max-width: 280px; 
+            font-size: 16px; 
+            border: 1px solid #84231b;
+            border-radius: 30px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.7); 
+            margin-top: 30px; 
+            z-index: 20; 
+        }
+        #voice-btn:hover {
+            border-color: #dcae5b;
+            box-shadow: 0 0 25px rgba(132, 35, 27, 0.6);
+        }
+
+        #calibrate-btn { 
+            background: linear-gradient(135deg, #1b2b1e 0%, #0c140e 100%); 
+            color: #a3bfa6; 
+            width: 80%; 
+            max-width: 280px; 
+            font-size: 14px; 
+            border: 1px solid #36543b;
+            border-radius: 30px;
+        }
+        #calibrate-btn:hover {
+            border-color: #62946b;
+            box-shadow: 0 0 20px rgba(54, 84, 59, 0.5);
+        }
 
         #spell-guide { 
             display: none; 
             position: absolute; 
-            top: 20px; 
-            right: 20px; 
-            width: 280px; 
-            max-height: 85vh; 
-            background: rgba(22, 16, 11, 0.95); 
-            border: 1px solid #b8934b; 
-            border-radius: 4px; 
-            padding: 20px; 
+            top: 25px; 
+            right: 25px; 
+            width: 290px; 
+            max-height: 82vh; 
+            background: rgba(18, 12, 8, 0.93); 
+            border: 2px solid #b8934b; 
+            border-radius: 8px; 
+            padding: 25px; 
             overflow-y: auto; 
             text-align: left; 
-            font-size: 14px; 
+            font-size: 15px; 
             z-index: 5; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8), inset 0 0 15px rgba(184, 147, 75, 0.1); 
         }
 
-        #spell-guide h3 { margin-top: 0; text-align: center; border-bottom: 2px solid #b8934b; padding-bottom: 8px; }
-        .guide-item { margin: 12px 0; border-bottom: 1px dashed #3a2e1a; padding-bottom: 6px; }
-        .guide-name { color: #dcae5b; font-weight: bold; font-family: 'Cinzel', serif; }
-        .guide-desc { color: #a49681; font-style: italic; font-size: 12px; }
+        #spell-guide h3 { 
+            margin-top: 0; 
+            text-align: center; 
+            border-bottom: 2px solid #b8934b; 
+            padding-bottom: 10px; 
+            font-family: 'Cinzel Decorative', serif;
+        }
+        
+        .guide-item { 
+            margin: 14px 0; 
+            border-bottom: 1px dashed #4a381b; 
+            padding-bottom: 8px; 
+        }
+        .guide-name { 
+            color: #f3cf8c; 
+            font-weight: bold; 
+            font-family: 'Cinzel', serif; 
+            font-size: 16px;
+        }
+        .guide-desc { 
+            color: #9e8e76; 
+            font-style: italic; 
+            font-size: 13px; 
+        }
+
+        /* Ambient glowing background runes for atmosphere */
+        .mystic-rune-bg {
+            position: absolute;
+            font-family: 'Cinzel', serif;
+            color: rgba(184, 147, 75, 0.03);
+            font-size: 12vw;
+            user-select: none;
+            pointer-events: none;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
 
+    <!-- Ambient background decorations -->
+    <div class="mystic-rune-bg" style="top: 5%; left: 5%;">ᛜ</div>
+    <div class="mystic-rune-bg" style="bottom: 5%; right: 5%;">ᛟ</div>
+
     <div id="ui-layer">
         <h2 id="title">✨ Awakening Grimoire...</h2>
         <div id="laptop-setup" style="display:none;">
-            <p>Open this scrolls' address on your mobile device.</p>
-            <p>To bind your wooden wand core, mutter this Rune Keyword into your device:</p>
-            <h1 id="room-id" style="color: #dcae5b; font-size: 36px; margin-bottom: 5px; user-select: text; -webkit-user-select: text; font-family: 'Cinzel', serif;">Generating...</h1>
-            <button id="copy-btn" onclick="copyRoomID()">📋 Copy Rune Key</button>
-            <p style="margin-top: 25px; font-size: 14px; color: #8c7b64;">Awaiting the wave of a companion wand device...</p>
+            <p>Cast your gaze upon this screen and open this scroll's address on your companion mobile device.</p>
+            <p>To bind your wooden wand core, whisper this Rune Key into the device:</p>
+            <h1 id="room-id" style="color: #f3cf8c; font-size: 42px; margin: 15px 0; user-select: text; -webkit-user-select: text;">...</h1>
+            <button id="copy-btn" onclick="copyRoomID()">📋 Copy Rune Key Signature</button>
+            <p style="margin-top: 30px; font-size: 14px; color: #7c6b53; font-style: italic;">Awaiting the resonant frequency of a companion wand...</p>
         </div>
         <div id="phone-setup" style="display:none;">
             <button id="permission-btn" onclick="requestDeviceSensors()">1. Grant Wand Intuition ⚡</button>
@@ -137,22 +259,25 @@
     </div>
 
     <div id="spell-guide">
-        <h3>📜 Spell Arcana</h3>
-        <div class="guide-item"><span class="guide-name">Lumos</span><br><span class="guide-desc">Summons a warm, shimmering orb of pure starlight accompanied by a deep rhythmic hum.</span></div>
-        <div class="guide-item"><span class="guide-name">Nox</span><br><span class="guide-desc">Extinguishes the star light with a sudden wind swoosh.</span></div>
-        <div class="guide-item"><span class="guide-name">Avada Kedavra</span><br><span class="guide-desc">Unleashes jagged emerald plasma fractures across the screen with a booming rumble.</span></div>
-        <div class="guide-item"><span class="guide-name">Protego</span><br><span class="guide-desc">Weaves shimmering layered protection rings that deflect magical trajectories.</span></div>
-        <div class="guide-item"><span class="guide-name">Incendio</span><br><span class="guide-desc">Ignites roaring flame embers that twist and float upwards into dark smoke.</span></div>
-        <div class="guide-item"><span class="guide-name">Expecto Patronum</span><br><span class="guide-desc">Swirls an ethereal silver-blue cosmos vortex around the wand tip.</span></div>
-        <div class="guide-item"><span class="guide-name">Stupefy</span><br><span class="guide-desc">Fires a concentrated red plasma bolt that bursts on impact.</span></div>
-        <div class="guide-item"><span class="guide-name">Expelliarmus</span><br><span class="guide-desc">Expels a violent crimson shockwave ring expanding outwards.</span></div>
+        <h3>📜 Arcane Index</h3>
+        <div class="guide-item"><span class="guide-name">Lumos</span><br><span class="guide-desc">Summons a shimmering orb of warm starlight and a deep rhythmic hum. Drag tracking circle or speak phrase.</span></div>
+        <div class="guide-item"><span class="guide-name">Nox</span><br><span class="guide-desc">Extinguishes the light with a soft cosmic sigh.</span></div>
+        <div class="guide-item"><span class="guide-name">Avada Kedavra</span><br><span class="guide-desc">Unleashes a sudden spike of emerald lightning pathways across the screen. Swipe Down.</span></div>
+        <div class="guide-item"><span class="guide-name">Protego</span><br><span class="guide-desc">Weaves a layered circular containment grid that expands and filters audio.</span></div>
+        <div class="guide-item"><span class="guide-name">Incendio</span><br><span class="guide-desc">Ignites floating ember sparks that rise smoothly upwards. Swipe Right.</span></div>
+        <div class="guide-item"><span class="guide-name">Expecto Patronum</span><br><span class="guide-desc">Swirls a silver-blue stardust vortex around your focal point.</span></div>
+        <div class="guide-item"><span class="guide-name">Stupefy</span><br><span class="guide-desc">Fires a sudden concentrated red blast directly to your tracking node.</span></div>
+        <div class="guide-item"><span class="guide-name">Expelliarmus</span><br><span class="guide-desc">Expels a deep crimson shockwave pulsing out from the center. Swipe Left.</span></div>
     </div>
 
     <div id="wand-pad">
-        <h2 id="wand-status" style="color: #5a4522;">Wand Sleep State</h2>
-        <p style="color: #8c7b64; text-align: center; padding: 0 20px; font-size: 14px;">Hold screen to draw tracking arcs.<br>Point at screen and tap calibrate if it drifts.</p>
+        <h2 id="wand-status" style="color: #4a381b; font-family: 'Cinzel', serif;">Wand Dormant</h2>
+        <p style="color: #7c6b53; text-align: center; padding: 0 20px; font-size: 14px; font-style: italic;">
+            Hold the scroll surface to channel tracking lines.<br>
+            Aim at your screen and calibrate if the orientation shifts.
+        </p>
         <button id="voice-btn" onclick="startVoiceRecognition()">🎙️ Incantation</button>
-        <button id="calibrate-btn" onclick="sendCalibrationTrigger()">🎯 Calibrate Wand Position</button>
+        <button id="calibrate-btn" onclick="sendCalibrationTrigger()">🎯 Align Celestial Center</button>
     </div>
 
     <script>
@@ -176,14 +301,20 @@
         let lumosOscillator = null;
         let lumosGainNode = null;
 
-        let SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = SpeechRecognition ? new SpeechRecognition() : null;
+        // SAFELY INITIALIZE VOICE RECOGNITION
+        let SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+        let recognition = null;
 
-        if (recognition) {
-            recognition.continuous = false;
-            recognition.lang = 'en-US';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
+        try {
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+            }
+        } catch(e) {
+            console.log("Voice speech engine not supported on this mobile device layer.");
         }
 
         window.onload = function() {
@@ -221,7 +352,6 @@
             let now = audioCtx.currentTime;
 
             if (type === "avadakedavra") {
-                // Dark mystical thunder crackle
                 let bufferSize = audioCtx.sampleRate * 0.6; 
                 let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 let data = buffer.getChannelData(0);
@@ -243,7 +373,6 @@
                 noiseNode.start(now);
             }
             else if (type === "protego") {
-                // Glassy, musical resonant chime chord
                 [440, 554, 659].forEach(freq => {
                     let osc = audioCtx.createOscillator();
                     let gain = audioCtx.createGain();
@@ -256,7 +385,6 @@
                 });
             }
             else if (type === "stupefy") {
-                // Quick whipping frequency punch
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
                 osc.type = "triangle";
@@ -268,7 +396,6 @@
                 osc.start(now); osc.stop(now + 0.25);
             }
             else if (type === "expelliarmus") {
-                // Deep, ominous bass drum boom
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
                 osc.type = "sine";
@@ -280,7 +407,6 @@
                 osc.start(now); osc.stop(now + 0.5);
             }
             else if (type === "incendio") {
-                // Sustained roaring wind crackle
                 let bufferSize = audioCtx.sampleRate * 0.4;
                 let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 let data = buffer.getChannelData(0);
@@ -295,7 +421,6 @@
                 noise.start(now);
             }
             else if (type === "expectopatronum") {
-                // Shimmering musical celestial sweep
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
                 osc.type = "sine";
@@ -341,16 +466,16 @@
                 navigator.clipboard.writeText(roomIdText);
                 let btn = document.getElementById('copy-btn');
                 btn.innerText = "✅ Scroll Signature Copied";
-                setTimeout(() => { btn.innerText = "📋 Copy Rune Key"; }, 2000);
+                setTimeout(() => { btn.innerText = "📋 Copy Rune Key Signature"; }, 2000);
             }
         }
 
         function requestDeviceSensors() {
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
                     .then(state => {
                         if (state === 'granted') {
-                            document.getElementById('permission-btn').style.background = "#48694d";
+                            document.getElementById('permission-btn').style.background = "#36543b";
                             document.getElementById('permission-btn').innerText = "Wand Attuned ✅";
                         }
                     }).catch(console.error);
@@ -360,11 +485,13 @@
         function connectToLaptop() {
             let targetID = document.getElementById('join-id').value.trim();
             conn = peer.connect(targetID);
+            
             conn.on('open', () => {
                 document.getElementById('ui-layer').style.display = "none";
                 document.getElementById('wand-pad').style.display = "flex";
-                document.getElementById('wand-status').innerText = "WAND INTUITION BOUND 🌟";
+                document.getElementById('wand-status').innerText = "WAND ATTUNED 🌟";
                 document.getElementById('wand-status').style.color = "#dcae5b";
+                
                 setupPhoneSensors();
                 setupVoiceEngine();
             });
@@ -372,14 +499,15 @@
 
         function setupVoiceEngine() {
             if (!recognition) return;
+            
             recognition.onstart = function() {
-                document.getElementById('wand-status').innerText = "MUTER WORDS NOW... 📻";
+                document.getElementById('wand-status').innerText = "LISTENING FOR INCANTATION... 📻";
                 document.getElementById('wand-status').style.color = "#84231b";
             };
             recognition.onspeechend = function() { recognition.stop(); };
             recognition.onerror = function() {
-                document.getElementById('wand-status').innerText = "Wand Misunderstood";
-                document.getElementById('wand-status').style.color = "#5a4522";
+                document.getElementById('wand-status').innerText = "Incantation Lost";
+                document.getElementById('wand-status').style.color = "#4a381b";
                 resetWandStatusDelay();
             };
             recognition.onresult = function(event) {
@@ -391,42 +519,48 @@
         }
 
         function startVoiceRecognition() {
-            if (recognition) recognition.start();
+            if (recognition) {
+                try { recognition.start(); } catch(e) { console.log(e); }
+            } else {
+                alert("Voice magic incantations are not supported on this mobile browser. Use touch gestures instead!");
+            }
         }
 
         function sendCalibrationTrigger() {
-            autoCalibrated = false; // Forces recalculation on the next sensor loop tick
-            document.getElementById('wand-status').innerText = "🎯 RE-CALIBRATING CENTER...";
+            autoCalibrated = false; 
+            document.getElementById('wand-status').innerText = "🎯 RE-ALIGNING SPELL CENTER...";
             resetWandStatusDelay();
         }
 
         function resetWandStatusDelay() {
             setTimeout(() => {
-                document.getElementById('wand-status').innerText = "WAND INTUITION BOUND 🌟";
+                document.getElementById('wand-status').innerText = "WAND ATTUNED 🌟";
                 document.getElementById('wand-status').style.color = "#dcae5b";
             }, 1500);
         }
 
         function setupPhoneSensors() {
             let wandPad = document.getElementById('wand-pad');
+            
             wandPad.addEventListener('touchstart', (e) => { 
                 if (e.target.tagName === "BUTTON") return;
                 e.preventDefault();
-                conn.send({ type: "draw_state", drawing: true }); 
-            });
+                if (conn && conn.open) conn.send({ type: "draw_state", drawing: true }); 
+            }, { passive: false });
+            
             wandPad.addEventListener('touchend', (e) => { 
                 if (e.target.tagName === "BUTTON") return;
                 e.preventDefault();
-                conn.send({ type: "draw_state", drawing: false }); 
-            });
+                if (conn && conn.open) conn.send({ type: "draw_state", drawing: false }); 
+            }, { passive: false });
 
             window.addEventListener('deviceorientation', (event) => {
                 if (conn && conn.open) {
                     let currentPitch = event.beta;  
                     let currentRoll = event.gamma;   
 
-                    // --- TRUE ABSOLUTE AUTO-CALIBRATION SYSTEM ---
-                    // Snap current tilt angles as 0,0 starting coordinate matrix
+                    if (currentPitch === null || currentRoll === null) return;
+
                     if (!autoCalibrated) {
                         basePitch = currentPitch;
                         baseRoll = currentRoll;
@@ -434,11 +568,9 @@
                         conn.send({ type: "force_recenter" });
                     }
 
-                    // Calculate displacement from your custom calibrated center position
                     let deviationRoll = currentRoll - baseRoll;
                     let deviationPitch = currentPitch - basePitch;
 
-                    // Handle edge flips smoothly
                     if (deviationRoll > 180) deviationRoll -= 360;
                     if (deviationRoll < -180) deviationRoll += 360;
 
@@ -449,7 +581,11 @@
             conn.on('data', (data) => {
                 if (data.type === "spell_success") {
                     document.getElementById('wand-status').innerText = data.spellName + "!";
-                    if (navigator.vibrate) { navigator.vibrate([60, 30, 60]); }
+                    document.getElementById('wand-status').style.color = "#e6dfd3";
+                    
+                    if (navigator.vibrate) { 
+                        try { navigator.vibrate([60, 30, 60]); } catch(e){} 
+                    }
                     resetWandStatusDelay();
                 }
             });
@@ -467,8 +603,6 @@
                     if (!isPhoneDrawing) evaluateSpell(); 
                 }
                 if (data.type === "absolute_tracking") {
-                    // Absolute positional calculation mapped cleanly to monitor dimensions
-                    // Multipliers adjusted down for soft, smooth organic pointing motion
                     handX = (width / 2) + (data.rollPos * 25);
                     handY = (height / 2) + (data.pitchPos * 20); 
 
@@ -485,7 +619,8 @@
                 createCanvas(windowWidth, windowHeight);
                 let canvasElement = document.getElementsByClassName('p5Canvas')[0];
                 if(canvasElement) {
-                    canvasElement.style.filter = "drop-shadow(0px 0px 35px rgba(220, 174, 91, 0.3))";
+                    // Adds a deep mystical bloom overlay shadow around canvas elements
+                    canvasElement.style.filter = "drop-shadow(0px 0px 45px rgba(184, 147, 75, 0.25))";
                 }
             } else {
                 noCanvas();
@@ -494,8 +629,15 @@
 
         function draw() {
             if (isMobile) return;
-            // Ancient cosmic night backdrop
-            background(10, 7, 5);
+            // Clear layout background inside the loop frame
+            background(12, 8, 6);
+
+            // Subtle organic background parchment vignette glow effect
+            noStroke();
+            for(let r = width; r > 0; r -= width/8) {
+                fill(6, 4, 3, map(r, 0, width, 0, 120));
+                circle(width/2, height/2, r);
+            }
 
             let baseWandX = width / 2;
             let baseWandY = height + 30;
@@ -505,9 +647,9 @@
             let tipWandY = baseWandY + sin(angle) * lengthWand;
 
             // Draw Old Polished Mahogany Wood Wand Structure
-            strokeWeight(16); stroke(23, 13, 7);
+            strokeWeight(16); stroke(20, 11, 6);
             line(baseWandX, baseWandY, baseWandX + cos(angle)*90, baseWandY + sin(angle)*90);
-            strokeWeight(8); stroke(46, 29, 17);
+            strokeWeight(8); stroke(41, 24, 13);
             line(baseWandX + cos(angle)*90, baseWandY + sin(angle)*90, tipWandX, tipWandY);
             
             // Ornate Gold Filigree Wand Tip Ferrule
@@ -534,12 +676,19 @@
 
             if (effectTimer > 0) { renderComplexVFXOverlay(currentActiveSpell, tipWandX, tipWandY); }
 
-            // Antique circular crosshair ring
+            // Antique circular crosshair ring focal anchor
             stroke(184, 147, 75, 45); strokeWeight(1.5); noFill();
-            circle(handX, handY, 24);
-            stroke(184, 147, 75, 25); circle(handX, handY, 8);
-            fill(220, 174, 91, 140); noStroke();
-            circle(handX, handY, 3);
+            circle(handX, handY, 26);
+            stroke(184, 147, 75, 20); circle(handX, handY, 10);
+            
+            // Outer constellation guide ring
+            stroke(184, 147, 75, 12); strokeWeight(1);
+            drawingContext.setLineDash([4, 6]);
+            circle(handX, handY, 50);
+            drawingContext.setLineDash([]); // clear dash track
+            
+            fill(243, 207, 140, 180); noStroke();
+            circle(handX, handY, 4);
         }
 
         class SpellParticle {
@@ -572,11 +721,11 @@
             display() {
                 if (this.life <= 0) return;
                 push(); noStroke();
-                // Alchemical color blends
-                fill(this.r, this.g, this.b, map(this.life, 0, this.maxLife, 0, 200));
+                // Alchemical soft aura textures
+                fill(this.r, this.g, this.b, map(this.life, 0, this.maxLife, 0, 180));
                 circle(this.x, this.y, this.size);
-                fill(255, 250, 230, map(this.life, 0, this.maxLife, 0, 150));
-                circle(this.x, this.y, this.size * 0.35);
+                fill(255, 250, 235, map(this.life, 0, this.maxLife, 0, 140));
+                circle(this.x, this.y, this.size * 0.3);
                 pop();
             }
             isDead() { return this.life <= 0; }
@@ -585,21 +734,18 @@
         function generateSpellParticles(type, tx, ty) {
             if (type === "incendio") {
                 for (let i = 0; i < 5; i++) {
-                    // Deep volcanic sulfur orange sparks
-                    particles.push(new SpellParticle(tx, ty, random(-2.5, 2.5), random(-3.5, -0.5), 212, random(80, 110), 32, random(18, 35), 255, "rise"));
+                    particles.push(new SpellParticle(tx, ty, random(-2, 2), random(-3, -0.5), 225, random(90, 120), 40, random(15, 30), 255, "rise"));
                 }
             }
             else if (type === "expectopatronum") {
                 for (let i = 0; i < 7; i++) {
-                    let angle = random(TWO_PI); let speed = random(3, 9);
-                    // Silvery stardust cosmic blue elements
-                    particles.push(new SpellParticle(tx, ty, cos(angle)*speed, sin(angle)*speed, 180, 215, 240, random(10, 26), 220, "vortex"));
+                    let angle = random(TWO_PI); let speed = random(4, 8);
+                    particles.push(new SpellParticle(tx, ty, cos(angle)*speed, sin(angle)*speed, 165, 210, 245, random(12, 24), 220, "vortex"));
                 }
             }
             else if (type === "lumos") {
-                if (random(1) < 0.5) {
-                    // Soft warm ambient candle-like glow
-                    particles.push(new SpellParticle(tx + random(-5,5), ty + random(-5,5), random(-0.6, 0.6), random(-0.6, 0.6), 255, 235, 180, random(10, 20), 120, "rise"));
+                if (random(1) < 0.4) {
+                    particles.push(new SpellParticle(tx + random(-4,4), ty + random(-4,4), random(-0.5, 0.5), random(-0.5, 0.5), 255, 230, 170, random(8, 16), 130, "rise"));
                 }
             }
         }
@@ -607,45 +753,42 @@
         function renderComplexVFXOverlay(type, tx, ty) {
             push();
             if (type === "avadakedavra") {
-                // Organic erratic fractured lightning pathing
-                stroke(26, 180, 85); strokeWeight(random(4, 9)); noFill();
+                stroke(30, 195, 95); strokeWeight(random(5, 10)); noFill();
                 let curX = tx; let curY = ty;
-                let steps = 15;
+                let steps = 14;
                 beginShape(); vertex(curX, curY);
                 for (let i = 1; i <= steps; i++) {
                     let t = i / steps;
                     let targetXPoint = lerp(tx, handX, t);
                     let targetYPoint = lerp(ty, handY, t);
                     if (i < steps) {
-                        curX = targetXPoint + random(-40, 40); 
-                        curY = targetYPoint + random(-40, 40);
+                        curX = targetXPoint + random(-35, 35); 
+                        curY = targetYPoint + random(-35, 35);
                     } else {
                         curX = handX; curY = handY;
                     }
                     vertex(curX, curY);
                 }
                 endShape();
-                stroke(240, 255, 240); strokeWeight(2.5); line(tx, ty, handX, handY);
+                stroke(245, 255, 245); strokeWeight(3); line(tx, ty, handX, handY);
             }
             else if (type === "protego") {
                 noFill();
-                // Shimmering mystical energy containment barriers
                 for (let i = 0; i < 4; i++) {
-                    stroke(140, 190, 212, map(i, 0, 4, 10, 95)); 
+                    stroke(145, 195, 220, map(i, 0, 4, 15, 100)); 
                     strokeWeight(3);
-                    let waveSize = 130 + sin(frameCount * 0.2 + i * 0.9)*20;
+                    let waveSize = 140 + sin(frameCount * 0.25 + i * 0.8)*15;
                     circle(handX, handY, waveSize);
                 }
             }
             else if (type === "stupefy") {
-                // Searing bright ruby magic jet
-                stroke(165, 28, 28, 220); strokeWeight(16); line(tx, ty, handX, handY);
-                stroke(255, 230, 230); strokeWeight(4); line(tx, ty, handX, handY);
-                fill(195, 35, 35); noStroke(); circle(handX, handY, random(45, 75));
+                stroke(180, 30, 30, 230); strokeWeight(14); line(tx, ty, handX, handY);
+                stroke(255, 235, 235); strokeWeight(3.5); line(tx, ty, handX, handY);
+                fill(210, 40, 40); noStroke(); circle(handX, handY, random(40, 70));
             }
             else if (type === "expelliarmus") {
-                noFill(); stroke(132, 35, 27, 200); strokeWeight(12);
-                let shockwaveDiameter = map(effectTimer, 45, 0, 10, width * 0.65);
+                noFill(); stroke(145, 40, 30, 210); strokeWeight(10);
+                let shockwaveDiameter = map(effectTimer, 45, 0, 10, width * 0.7);
                 circle(tx, ty, shockwaveDiameter);
             }
             pop();
