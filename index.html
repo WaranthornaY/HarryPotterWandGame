@@ -4,158 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hogwarts Web Wand Game</title>
-    
-    <!-- Include p5.js for the Computer Graphics Engine -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <!-- Include PeerJS for Free, Real-Time WebRTC Connection -->
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
-    
     <style>
-        body { 
-            margin: 0; 
-            background: #0b0b14; 
-            color: white; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            overflow: hidden; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        #ui-layer { 
-            position: absolute; 
-            z-index: 10; 
-            text-align: center; 
-            background: rgba(11, 11, 20, 0.9); 
-            padding: 30px; 
-            border-radius: 15px; 
-            border: 2px solid #4a0e4e;
-            box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
-        }
-        input, button { 
-            padding: 15px 25px; 
-            font-size: 18px; 
-            margin: 15px; 
-            border-radius: 8px; 
-            border: none; 
-            text-align: center;
-        }
-        input {
-            background: #222;
-            color: white;
-            border: 1px solid #8a2be2;
-        }
-        button { 
-            background: #8a2be2; 
-            color: white; 
-            cursor: pointer; 
-            font-weight: bold; 
-            transition: background 0.3s;
-        }
-        button:hover {
-            background: #a142ff;
-        }
-        #wand-pad { 
-            width: 100vw; 
-            height: 100vh; 
-            display: none; 
-            background: #111; 
-            justify-content: center; 
-            align-items: center; 
-            flex-direction: column; 
-            touch-action: none;
-        }
-        #wand-status {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
+        body { margin: 0; background: #0b0b14; color: white; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; user-select: none; -webkit-user-select: none; }
+        #ui-layer { position: absolute; z-index: 10; text-align: center; background: rgba(11, 11, 20, 0.95); padding: 30px; border-radius: 15px; border: 2px solid #8a2be2; width: 80%; max-width: 400px; }
+        input, button { padding: 15px; font-size: 18px; margin: 10px 0; border-radius: 8px; border: none; text-align: center; width: 100%; box-sizing: border-box; }
+        input { background: #222; color: white; border: 1px solid #8a2be2; }
+        button { background: #8a2be2; color: white; cursor: pointer; font-weight: bold; }
+        #permission-btn { background: #00ffcc; color: #000; display: none; }
+        #wand-pad { width: 100vw; height: 100vh; display: none; background: #111; justify-content: center; align-items: center; flex-direction: column; touch-action: none; }
     </style>
 </head>
 <body>
 
-    <!-- SETUP UI LAYER (Visible before connecting) -->
     <div id="ui-layer">
         <h2 id="title">Detecting Magical Device...</h2>
         
-        <!-- Laptop view details -->
         <div id="laptop-setup" style="display:none;">
-            <p>On your PHONE, open this exact same website link.</p>
-            <p>Then type this Secret Wand ID into your phone:</p>
-            <h1 id="room-id" style="color: #00ffff; font-size: 42px; letter-spacing: 2px;">Generating...</h1>
+            <p>On your PHONE, open this exact website link.</p>
+            <h1 id="room-id" style="color: #00ffff; font-size: 42px;">Generating...</h1>
             <p>Waiting for your phone wand to connect...</p>
         </div>
         
-        <!-- Phone view details -->
         <div id="phone-setup" style="display:none;">
-            <p>Look at your Computer Monitor and type the ID code below:</p>
+            <!-- Separate Permission Trigger for iOS -->
+            <button id="permission-btn" onclick="requestDeviceSensors()">1. Enable Phone Motion ⚡</button>
             <input type="text" id="join-id" placeholder="Enter Laptop ID">
-            <br>
-            <button id="connect-btn" onclick="connectToLaptop()">Link Wand ✨</button>
+            <button id="connect-btn" onclick="connectToLaptop()">2. Link Wand ✨</button>
         </div>
     </div>
 
-    <!-- PHONE CONTROLLER SCREEN -->
     <div id="wand-pad">
         <h2 id="wand-status" style="color: #666;">Wand Disconnected</h2>
-        <p style="color: #aaa; text-align: center; padding: 0 20px;">PRESS & HOLD your thumb anywhere on this screen, then physically slash your arm through the air to cast!</p>
+        <p style="color: #aaa; text-align: center; padding: 0 20px; font-size: 18px;">PRESS & HOLD your thumb down here, slash your phone UP quickly, then let go!</p>
     </div>
 
-    <!-- JAVASCRIPT GAME ENGINE -->
     <script>
-        // Automatically check if the device accessing the link is mobile
         let isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
         let peer, conn;
         
-        // Physical Physics Tracking Engine Variables
         let spellTrail = [];
-        let handX = 0, handY = 0;         // Calculated position of your hand on screen
-        let velocityX = 0, velocityY = 0; // Speed vectors of your physical movement
+        let handX = 0, handY = 0;         
+        let velocityX = 0, velocityY = 0; 
         let isPhoneDrawing = false;
-        let currentBackgroundColor = [11, 11, 20]; // Default Hogwarts theme color
+        let currentBackgroundColor = [11, 11, 20];
 
         window.onload = function() {
-            peer = new Peer(); // Setup PeerJS server connection
+            peer = new Peer();
 
             if (isMobile) {
-                // --- PHONE RUNTIME SETUP ---
                 document.getElementById('title').innerText = "🧙‍♂️ Wand Controller";
                 document.getElementById('phone-setup').style.display = "block";
                 
-                // CRITICAL FOR PHONE SECURITY: iOS needs user permission to read motion chips
-                document.getElementById('connect-btn').addEventListener('click', () => {
-                    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-                        DeviceMotionEvent.requestPermission()
-                            .then(permissionState => {
-                                if (permissionState === 'granted') {
-                                    console.log("Motion sensors unlocked successfully!");
-                                }
-                            })
-                            .catch(console.error);
-                    }
-                });
+                // Show the permission unlock button explicitly if on iOS
+                if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                    document.getElementById('permission-btn').style.display = "block";
+                }
             } else {
-                // --- LAPTOP MONITOR SETUP ---
                 document.getElementById('title').innerText = "🏰 Hogwarts Monitor";
                 document.getElementById('laptop-setup').style.display = "block";
                 
-                peer.on('open', (id) => {
-                    document.getElementById('room-id').innerText = id; // Display unique room code
-                });
-
-                // Listen for your phone joining the session
+                peer.on('open', (id) => { document.getElementById('room-id').innerText = id; });
                 peer.on('connection', (incomingConn) => {
                     conn = incomingConn;
-                    document.getElementById('ui-layer').style.display = "none"; // Hide connection menu
+                    document.getElementById('ui-layer').style.display = "none";
                     setupDataListeners();
                 });
             }
         };
 
-        // Phone connection pipeline
+        // Explicitly ask for iOS motion permission on button click
+        function requestDeviceSensors() {
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission()
+                    .then(state => {
+                        if (state === 'granted') {
+                            document.getElementById('permission-btn').style.innerText = "Motion Enabled Ready ✅";
+                            document.getElementById('permission-btn').style.background = "#555";
+                        }
+                    })
+                    .catch(console.error);
+            }
+        }
+
         function connectToLaptop() {
             let targetID = document.getElementById('join-id').value.trim();
             conn = peer.connect(targetID);
@@ -169,15 +101,13 @@
             });
         }
 
-        // --- PHONE HARDWARE SENSOR INPUT STREAM ---
         function setupPhoneSensors() {
             let wandPad = document.getElementById('wand-pad');
             
-            // Set up casting state triggers (Touch down = drawing, Touch release = cast complete)
             wandPad.addEventListener('touchstart', (e) => { 
                 e.preventDefault();
                 conn.send({ type: "draw_state", drawing: true }); 
-                wandPad.style.background = "#220033"; // Turn pad dark purple while casting
+                wandPad.style.background = "#220033"; 
             });
             wandPad.addEventListener('touchend', (e) => { 
                 e.preventDefault();
@@ -185,16 +115,14 @@
                 wandPad.style.background = "#111";
             });
 
-            // Stream raw acceleration force data directly over the WebSockets pipeline
             window.addEventListener('devicemotion', (event) => {
                 if (conn && conn.open) {
-                    // Collect force data completely excluding earth's gravity vector
                     let accX = event.acceleration.x || 0;
                     let accY = event.acceleration.y || 0;
 
-                    // Sensor deadzone filter: ignores minor pocket or finger shakings
-                    if (Math.abs(accX) < 0.3) accX = 0;
-                    if (Math.abs(accY) < 0.3) accY = 0;
+                    // Lowered the deadzone from 0.3 to 0.1 so it catches lighter, slower movements too
+                    if (Math.abs(accX) < 0.1) accX = 0;
+                    if (Math.abs(accY) < 0.1) accY = 0;
 
                     conn.send({
                         type: "physics_motion",
@@ -204,13 +132,10 @@
                 }
             });
 
-            // Listen for feedback packets beamed back from the laptop monitor
             conn.on('data', (data) => {
                 if (data.type === "spell_success") {
-                    wandPad.style.backgroundColor = data.color; // Flash screen spell color
+                    wandPad.style.backgroundColor = data.color;
                     document.getElementById('wand-status').innerText = data.spellName.toUpperCase() + "!";
-                    
-                    // Reset wand back to normal tracking status after 2 seconds
                     setTimeout(() => {
                         wandPad.style.backgroundColor = "#111";
                         document.getElementById('wand-status').innerText = "Wand Linked ✨";
@@ -219,9 +144,7 @@
             });
         }
 
-        // --- LAPTOP DATA PARSING ENGINE ---
         function setupDataListeners() {
-            // Drop initial cursor focus coordinates right into the center of the monitor
             handX = width / 2;
             handY = height / 2;
 
@@ -229,25 +152,23 @@
                 if (data.type === "draw_state") {
                     isPhoneDrawing = data.drawing;
                     if (!isPhoneDrawing) {
-                        evaluateSpell(); // Process the spatial line data as soon as the finger releases
-                        velocityX = 0; velocityY = 0; // Freeze velocity calculations
+                        evaluateSpell(); 
+                        velocityX = 0; velocityY = 0; 
                     }
                 }
                 
                 if (data.type === "physics_motion") {
-                    // Physics integration logic: Accel influences speed, speed shifts spatial position.
-                    // Physics note: Slashing down produces negative hardware acceleration vectors on Y axis.
-                    velocityX += data.accX * 0.4; 
-                    velocityY -= data.accY * 0.4; 
+                    // Increased the sensitivity multiplier from 0.4 to 1.2 to boost cursor speed!
+                    velocityX += data.accX * 1.2; 
+                    velocityY -= data.accY * 1.2; 
 
-                    // Friction simulation: stabilizes cursor so trail stops dragging if your hand stops
-                    velocityX *= 0.75;
-                    velocityY *= 0.75;
+                    // Adjusted friction slightly to keep the movement smooth but fast
+                    velocityX *= 0.85;
+                    velocityY *= 0.85;
 
                     handX += velocityX;
                     handY += velocityY;
 
-                    // Enforce boundary clip protection rules (keeps cursor on screen)
                     handX = constrain(handX, 0, width);
                     handY = constrain(handY, 0, height);
 
@@ -258,76 +179,60 @@
             });
         }
 
-        // --- LAPTOP RENDER MODULE (p5.js Hooks) ---
         function setup() {
-            if (!isMobile) {
-                createCanvas(windowWidth, windowHeight);
-            } else {
-                noCanvas(); // Completely disable background visual engines if loaded on phone
-            }
+            if (!isMobile) createCanvas(windowWidth, windowHeight);
+            else noCanvas();
         }
 
         function draw() {
             if (isMobile) return;
             background(currentBackgroundColor[0], currentBackgroundColor[1], currentBackgroundColor[2]);
 
-            // Draw the neon magical energy trail left behind by your arm tracking vectors
             noFill();
             strokeWeight(10);
             for (let i = 1; i < spellTrail.length; i++) {
                 let alpha = map(i, 0, spellTrail.length, 0, 255);
-                stroke(255, 215, 0, alpha); // Gorgeous fading gold particles
+                stroke(255, 215, 0, alpha); 
                 line(spellTrail[i-1].x, spellTrail[i-1].y, spellTrail[i].x, spellTrail[i].y);
             }
 
-            // Draw your primary glowing spark core cursor point
             fill(255, 255, 200);
             noStroke();
             circle(handX, handY, 25);
         }
 
-        // --- ALGORITHMIC SPELL RECOGNITION SYSTEM ---
         function evaluateSpell() {
-            if (spellTrail.length < 10) {
-                spellTrail = []; // Drop execution if path metrics are too short
+            if (spellTrail.length < 5) { // Lowered length requirements for testing
+                spellTrail = []; 
                 return;
             }
 
             let startPoint = spellTrail[0];
             let endPoint = spellTrail[spellTrail.length - 1];
-            
-            // Calculate total spatial height displacement from beginning to end
             let verticalDrop = endPoint.y - startPoint.y;
 
-            // Mathematical shape conditions
-            if (verticalDrop > 150) {
-                // Severe physical drop = Death Curse
-                triggerSpellResult("Avada Kedavra", [0, 150, 50]); // Deathly Emerald Green
-            } else if (verticalDrop < -150) {
-                // Violent upward thrust = Levitation Charm
-                triggerSpellResult("Ascendio", [100, 150, 255]); // Sky Blue Burst
+            // Debug logger to show tracking values in your computer's browser console
+            console.log("Spell cast vertical movement: " + verticalDrop);
+
+            if (verticalDrop > 80) {
+                triggerSpellResult("Avada Kedavra", [0, 150, 50]); 
+            } else if (verticalDrop < -80) {
+                triggerSpellResult("Ascendio", [100, 150, 255]); 
             } else {
-                // Generic minor circular/horizontal gesture
-                triggerSpellResult("Lumos", [255, 255, 255]); // Pure White Light
+                triggerSpellResult("Lumos", [255, 255, 255]); 
             }
 
-            spellTrail = []; // Flush tracking matrix buffers for next pattern capture
+            spellTrail = []; 
         }
 
         function triggerSpellResult(name, rgbColor) {
-            currentBackgroundColor = rgbColor; // Flash the computer screen background
-            
-            // Send back real-time feedback packet down to the hand client
+            currentBackgroundColor = rgbColor;
             conn.send({ 
                 type: "spell_success", 
                 spellName: name, 
                 color: "rgb(" + rgbColor.join(",") + ")" 
             });
-            
-            // Reset laptop background theme color to dark space style after 2 seconds
-            setTimeout(() => { 
-                currentBackgroundColor = [11, 11, 20]; 
-            }, 2000);
+            setTimeout(() => { currentBackgroundColor = [11, 11, 20]; }, 2000);
         }
 
         function windowResized() {
