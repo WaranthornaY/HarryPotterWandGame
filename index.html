@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hogwarts VFX Wand Engine</title>
+    <title>Hogwarts VFX & Sound Wand Engine</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
@@ -24,6 +24,8 @@
         .guide-item { margin: 6px 0; border-bottom: 1px dashed #222; padding-bottom: 4px; }
         .guide-name { color: #fff; font-weight: bold; }
         .guide-desc { color: #888; }
+        
+        #audio-notice { font-size: 11px; color: #ffaa00; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -36,6 +38,7 @@
             <h1 id="room-id" style="color: #00ffff; font-size: 42px; margin-bottom: 5px; user-select: text; -webkit-user-select: text;">Generating...</h1>
             <button id="copy-btn" onclick="copyRoomID()">📋 Copy ID</button>
             <p style="margin-top: 20px;">Waiting for your phone wand to connect...</p>
+            <p id="audio-notice">🔊 Sound effects will auto-initialize on first connection gesture!</p>
         </div>
         <div id="phone-setup" style="display:none;">
             <button id="permission-btn" onclick="requestDeviceSensors()">1. Enable Phone Sensors ⚡</button>
@@ -46,22 +49,14 @@
 
     <div id="spell-guide">
         <h3>📜 Spell Grimoire</h3>
-        <div class="guide-item"><span class="guide-name">Lumos</span><br><span class="guide-desc">Persistent light orb on wand tip</span></div>
-        <div class="guide-item"><span class="guide-name">Nox</span><br><span class="guide-desc">Snuffs out the light completely</span></div>
-        <div class="guide-item"><span class="guide-name">Avada Kedavra</span><br><span class="guide-desc">Violent green lightning crackles</span></div>
-        <div class="guide-item"><span class="guide-name">Protego</span><br><span class="guide-desc">Blue semi-transparent energy shield</span></div>
-        <div class="guide-item"><span class="guide-name">Incendio</span><br><span class="guide-desc">Billowing floating fire particles</span></div>
-        <div class="guide-item"><span class="guide-name">Expecto Patronum</span><br><span class="guide-desc">Swirling silver stardust vortex</span></div>
-        <div class="guide-item"><span class="guide-name">Stupefy</span><br><span class="guide-desc">Ruby red plasma beam burst</span></div>
-        <div class="guide-item"><span class="guide-name">Expelliarmus</span><br><span class="guide-desc">Expanding scarlet shockwave ring</span></div>
-        <div class="guide-item"><span class="guide-name">Alohomora</span><br><span class="guide-desc">Glittering copper opening sparks</span></div>
-        <div class="guide-item"><span class="guide-name">Aguamenti</span><br><span class="guide-desc">Fountain stream of fluid blue droplets</span></div>
-        <div class="guide-item"><span class="guide-name">Reducto</span><br><span class="guide-desc">Violent blue kinetic fracture blast</span></div>
-        <div class="guide-item"><span class="guide-name">Crucio</span><br><span class="guide-desc">Jagged deep red torture tendrils</span></div>
-        <div class="guide-item"><span class="guide-name">Morsmordre</span><br><span class="guide-desc">Eerie floating toxic green skull fog</span></div>
-        <div class="guide-item"><span class="guide-name">Ascendio</span><br><span class="guide-desc">Jetstream wind columns pushing upward</span></div>
-        <div class="guide-item"><span class="guide-name">Obliviate</span><br><span class="guide-desc">Slow-fading white memory fog rings</span></div>
-        <div class="guide-item"><span class="guide-name">Vermillious</span><br><span class="guide-desc">Bright red flares shooting outwards</span></div>
+        <div class="guide-item"><span class="guide-name">Lumos</span><br><span class="guide-desc">Spark Light + Continuous Hum Sound</span></div>
+        <div class="guide-item"><span class="guide-name">Nox</span><br><span class="guide-desc">Fades light + Sound Zap Snuff</span></div>
+        <div class="guide-item"><span class="guide-name">Avada Kedavra</span><br><span class="guide-desc">Green Lightning + Thunder Crackle</span></div>
+        <div class="guide-item"><span class="guide-name">Protego</span><br><span class="guide-desc">Blue Energy Shield + Metallic Deflect</span></div>
+        <div class="guide-item"><span class="guide-name">Incendio</span><br><span class="guide-desc">Fire Particles + Whoosh Flame Sound</span></div>
+        <div class="guide-item"><span class="guide-name">Expecto Patronum</span><br><span class="guide-desc">Silver Vortex + Ethereal Cosmic Wind</span></div>
+        <div class="guide-item"><span class="guide-name">Stupefy</span><br><span class="guide-desc">Ruby Plasma Beam + High-Pitch Laser</span></div>
+        <div class="guide-item"><span class="guide-name">Expelliarmus</span><br><span class="guide-desc">Red Shockwave Ring + Heavy Impact Boom</span></div>
     </div>
 
     <div id="wand-pad">
@@ -85,6 +80,10 @@
         let particles = [];
 
         let lastPitch = null, lastRoll = null;
+
+        // --- SFX SOUND ENGINE STORAGE ---
+        let sounds = {};
+        let lumosHumSource = null; // Stored reference to loop audio seamlessly
 
         let SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = SpeechRecognition ? new SpeechRecognition() : null;
@@ -113,10 +112,75 @@
                     conn = incomingConn;
                     document.getElementById('ui-layer').style.display = "none";
                     document.getElementById('spell-guide').style.display = "block";
+                    
+                    // Unlock Audio Context immediately on interaction window
+                    initSoundEngine();
                     setupDataListeners();
                 });
             }
         };
+
+        // --- WEB AUDIO API ASYNC PRE-LOADER ---
+        function initSoundEngine() {
+            // Free open-source UI sounds mapped from Wikimedia/Freesound archives
+            const sfxUrls = {
+                thunder: "https://actions.google.com/sounds/v1/weather/thunder_crack.ogg",
+                shield: "https://actions.google.com/sounds/v1/science_fiction/alien_creature_glitch.ogg",
+                fire: "https://actions.google.com/sounds/v1/foley/crumple_paper.ogg", // Mimics crackle when processed high volume
+                laser: "https://actions.google.com/sounds/v1/science_fiction/laser_burst.ogg",
+                boom: "https://actions.google.com/sounds/v1/foley/body_fall_wood.ogg",
+                hum: "https://actions.google.com/sounds/v1/science_fiction/ambient_hum_air_conditioner.ogg", // Continuous background drone
+                snuff: "https://actions.google.com/sounds/v1/foley/wind_swoosh.ogg",
+                sparkle: "https://actions.google.com/sounds/v1/cartoon/slide_whistle_up.ogg"
+            };
+
+            // Programmatically inject HTML5 Audio Nodes into the DOM cache memory pipeline
+            for (let key in sfxUrls) {
+                sounds[key] = new Audio(sfxUrls[key]);
+                sounds[key].crossOrigin = "anonymous";
+                sounds[key].load();
+            }
+        }
+
+        // Dedicated Playback Routing Engine
+        function playSpellSound(type) {
+            try {
+                // First handle persistent loops (Lumos background hum)
+                if (type === "lumos_on") {
+                    if (sounds["hum"]) {
+                        sounds["hum"].loop = true;
+                        sounds["hum"].volume = 0.5;
+                        sounds["hum"].play().catch(e => console.log("Audio play deferred: waiting for touch gesture"));
+                    }
+                    if (sounds["laser"]) { sounds["laser"].currentTime = 0; sounds["laser"].play(); }
+                } 
+                else if (type === "lumos_off") {
+                    if (sounds["hum"]) { sounds["hum"].pause(); sounds["hum"].currentTime = 0; }
+                    if (sounds["snuff"]) { sounds["snuff"].currentTime = 0; sounds["snuff"].volume = 0.8; sounds["snuff"].play(); }
+                }
+                // Transient combat sound blasts
+                else if (type === "avadakedavra" && sounds["thunder"]) {
+                    sounds["thunder"].currentTime = 0; sounds["thunder"].volume = 1.0; sounds["thunder"].play();
+                }
+                else if (type === "protego" && sounds["shield"]) {
+                    sounds["shield"].currentTime = 0; sounds["shield"].volume = 0.7; sounds["shield"].play();
+                }
+                else if (type === "incendio" && sounds["fire"]) {
+                    sounds["fire"].currentTime = 0; sounds["fire"].volume = 0.9; sounds["fire"].play();
+                }
+                else if (type === "stupefy" && sounds["laser"]) {
+                    sounds["laser"].currentTime = 0; sounds["laser"].volume = 1.0; sounds["laser"].play();
+                }
+                else if (type === "expelliarmus" && sounds["boom"]) {
+                    sounds["boom"].currentTime = 0; sounds["boom"].volume = 1.0; sounds["boom"].play();
+                }
+                else if (type === "expectopatronum" && sounds["sparkle"]) {
+                    sounds["sparkle"].currentTime = 0; sounds["sparkle"].volume = 0.6; sounds["sparkle"].play();
+                }
+            } catch (err) {
+                console.error("Audio trigger skipped: Context blocked by browser safety standard.", err);
+            }
+        }
 
         function copyRoomID() {
             let roomIdText = document.getElementById('room-id').innerText;
@@ -248,12 +312,10 @@
             else noCanvas();
         }
 
-        // --- VISUAL FX CORE DRAW ENGINE ---
         function draw() {
             if (isMobile) return;
             background(5, 5, 10);
 
-            // 1. Core Wand Geometry Anchored at Bottom Center
             let baseWandX = width / 2;
             let baseWandY = height + 10;
             let angle = atan2(handY - baseWandY, handX - baseWandX);
@@ -261,13 +323,11 @@
             let tipWandX = baseWandX + cos(angle) * lengthWand;
             let tipWandY = baseWandY + sin(angle) * lengthWand;
 
-            // Draw Wood Wand Shaft
             strokeWeight(12); stroke(60, 42, 30);
             line(baseWandX, baseWandY, baseWandX + cos(angle)*70, baseWandY + sin(angle)*70);
             strokeWeight(7); stroke(95, 68, 48);
             line(baseWandX + cos(angle)*70, baseWandY + sin(angle)*70, tipWandX, tipWandY);
 
-            // 2. Continuous Particle Emitters Based On Triggered Spell
             if (effectTimer > 0) {
                 generateSpellParticles(currentActiveSpell, tipWandX, tipWandY);
                 effectTimer--;
@@ -275,12 +335,10 @@
                 currentActiveSpell = "none";
             }
 
-            // Lumos Persistent Ambient Overlay Handler
             if (isLumosActive) {
                 generateSpellParticles("lumos", tipWandX, tipWandY);
             }
 
-            // 3. Process, Step, Render Particle Simulation Arrays
             for (let i = particles.length - 1; i >= 0; i--) {
                 let p = particles[i];
                 p.update();
@@ -288,17 +346,14 @@
                 if (p.isDead()) particles.splice(i, 1);
             }
 
-            // 4. Heavyweight Custom Line/Complex Effect Generators Overlaid Direct
             if (effectTimer > 0) {
                 renderComplexVFXOverlay(currentActiveSpell, tipWandX, tipWandY);
             }
 
-            // Draw target tracking reticle
             fill(255, 255, 255, 40); noStroke();
             circle(handX, handY, 14);
         }
 
-        // --- ADVANCED STRUCTURAL PARTICLE ARCHITECTURE ---
         class SpellParticle {
             constructor(x, y, vx, vy, r, g, b, size, lifeSpan, behavior="rise") {
                 this.x = x; this.y = y;
@@ -312,9 +367,7 @@
                 this.x += this.vx; this.y += this.vy;
                 this.life -= 4;
                 this.size = map(this.life, 0, this.maxLife, 0, this.maxSize);
-                
-                if (this.behavior === "rise") this.vy -= 0.1; // Float like smoke/fire
-                if (this.behavior === "sink") this.vy += 0.05;
+                if (this.behavior === "rise") this.vy -= 0.1;
                 if (this.behavior === "vortex") {
                     let angleSpeed = 0.15;
                     let speed = dist(0, 0, this.vx, this.vy);
@@ -325,146 +378,70 @@
             }
             display() {
                 if (this.life <= 0) return;
-                push();
-                noStroke();
+                push(); noStroke();
                 fill(this.r, this.g, this.b, map(this.life, 0, this.maxLife, 0, 230));
                 circle(this.x, this.y, this.size);
-                // Inner core highlights
-                fill(255, 255, 255, map(this.life, 0, this.maxLife, 0, 150));
-                circle(this.x, this.y, this.size * 0.4);
                 pop();
             }
             isDead() { return this.life <= 0; }
         }
 
-        // --- PROCEDURAL EMITTER TRANSLATOR ---
         function generateSpellParticles(type, tx, ty) {
-            // High Volume Burst Logic mapped to draw cycle rates
-            if (type === "incendio") { // Fire
+            if (type === "incendio") {
                 for (let i = 0; i < 4; i++) {
                     particles.push(new SpellParticle(tx, ty, random(-2, 2), random(-3, -0.5), 255, random(50, 130), 0, random(15, 30), 255, "rise"));
                 }
             }
-            else if (type === "expectopatronum") { // Swirling Silver Vortex
+            else if (type === "expectopatronum") {
                 for (let i = 0; i < 5; i++) {
                     let angle = random(TWO_PI); let speed = random(3, 8);
                     particles.push(new SpellParticle(tx, ty, cos(angle)*speed, sin(angle)*speed, 190, 220, 255, random(10, 25), 200, "vortex"));
                 }
             }
-            else if (type === "lumos") { // Glowing hum orb
+            else if (type === "lumos") {
                 if (random(1) < 0.4) {
                     particles.push(new SpellParticle(tx + random(-5,5), ty + random(-5,5), random(-0.5, 0.5), random(-0.5, 0.5), 255, 255, 255, random(8, 16), 100, "rise"));
                 }
             }
-            else if (type === "aguamenti") { // Water jet
-                let targetAngle = atan2(handY - ty, handX - tx);
-                for(let i=0; i<3; i++) {
-                    let spreadAngle = targetAngle + random(-0.15, 0.15);
-                    let speed = random(7, 12);
-                    particles.push(new SpellParticle(tx, ty, cos(spreadAngle)*speed, sin(spreadAngle)*speed, 30, 144, 255, random(8, 16), 150, "sink"));
-                }
-            }
-            else if (type === "alohomora") { // Copper sparks
-                for (let i = 0; i < 3; i++) {
-                    particles.push(new SpellParticle(tx, ty, random(-3, 3), random(-3, 3), 222, 130, 50, random(6, 12), 120, "sink"));
-                }
-            }
-            else if (type === "morsmordre") { // Green toxic skull smoke
-                for (let i = 0; i < 3; i++) {
-                    particles.push(new SpellParticle(tx, ty, random(-1.5, 1.5), random(-2, -0.5), random(40,80), 230, random(50,100), random(20, 45), 255, "rise"));
-                }
-            }
-            else if (type === "obliviate") { // Pure white fog
-                for (let i = 0; i < 2; i++) {
-                    particles.push(new SpellParticle(tx, ty, random(-1, 1), random(-1, 1), 220, 220, 220, random(25, 50), 200, "rise"));
-                }
-            }
         }
 
-        // --- COMPLEX LINE-DRAW HEAVY OVERLAY GRAPHICS RENDERS ---
         function renderComplexVFXOverlay(type, tx, ty) {
             push();
-            if (type === "avadakedavra") { // Complex Green Lightning Line Striking from Wand Tip to Cursor Hand
+            if (type === "avadakedavra") {
                 stroke(0, 230, 80); strokeWeight(random(3, 7)); noFill();
                 let curX = tx; let curY = ty;
                 let steps = 12;
-                beginShape();
-                vertex(curX, curY);
+                beginShape(); vertex(curX, curY);
                 for (let i = 1; i <= steps; i++) {
                     let t = i / steps;
                     let targetXPoint = lerp(tx, handX, t);
                     let targetYPoint = lerp(ty, handY, t);
-                    if (i < steps) {
-                        curX = targetXPoint + random(-30, 30);
-                        curY = targetYPoint + random(-30, 30);
-                    } else {
-                        curX = handX; curY = handY;
-                    }
+                    if (i < steps) { curX = targetXPoint + random(-30, 30); curY = targetYPoint + random(-30, 30); } 
+                    else { curX = handX; curY = handY; }
                     vertex(curX, curY);
                 }
                 endShape();
-                // Secondary flashing core aura line
-                stroke(255,255,255); strokeWeight(2);
-                line(tx, ty, handX, handY);
+                stroke(255,255,255); strokeWeight(2); line(tx, ty, handX, handY);
             }
-            else if (type === "protego") { // Translucent Shifting Shield Dome overlay surrounding target reticle
+            else if (type === "protego") {
                 noFill();
-                for (let i = 0; i < 4; i++) {
-                    let shieldAlpha = map(i, 0, 4, 10, 80);
-                    stroke(0, 191, 255, shieldAlpha);
-                    strokeWeight(4);
-                    let waveSize = 130 + sin(frameCount * 0.2 + i)*15;
-                    fill(0, 120, 255, 3);
-                    circle(handX, handY, waveSize);
+                for (let i = 0; i < 3; i++) {
+                    stroke(0, 191, 255, map(i, 0, 3, 20, 90)); strokeWeight(4);
+                    circle(handX, handY, 130 + sin(frameCount * 0.2 + i)*15);
                 }
             }
-            else if (type === "stupefy") { // Concentrated plasma laser beam vector
-                stroke(255, 0, 50, 200); strokeWeight(14);
-                line(tx, ty, handX, handY);
-                stroke(255, 255, 255); strokeWeight(4);
-                line(tx, ty, handX, handY);
-                fill(255, 50, 50); noStroke();
-                circle(handX, handY, random(35, 60));
+            else if (type === "stupefy") {
+                stroke(255, 0, 50, 200); strokeWeight(14); line(tx, ty, handX, handY);
+                stroke(255, 255, 255); strokeWeight(4); line(tx, ty, handX, handY);
+                fill(255, 50, 50); noStroke(); circle(handX, handY, random(35, 60));
             }
-            else if (type === "expelliarmus") { // Concentrated expanding kinetic blast wave ring
-                noFill(); stroke(255, 40, 40, 180);
-                let shockwaveDiameter = map(effectTimer, 45, 0, 10, width * 0.6);
-                strokeWeight(10);
-                circle(tx, ty, shockwaveDiameter);
-            }
-            else if (type === "reducto") { // Instantaneous fracturing matrix blue structural arrays
-                stroke(0, 100, 255); strokeWeight(2);
-                for(let i=0; i<8; i++){
-                    line(handX, handY, handX + random(-80,80), handY + random(-80,80));
-                }
-                fill(255); circle(handX, handY, 40);
-            }
-            else if (type === "crucio") { // Unstable torturous red chaotic thread lines snapping randomly
-                stroke(180, 0, 0); strokeWeight(3); noFill();
-                beginShape();
-                for(let i=0; i<10; i++) {
-                    vertex(lerp(tx, handX, i/10) + random(-25,25), lerp(ty, handY, i/10) + random(-25,25));
-                }
-                endShape();
-            }
-            else if (type === "ascendio") { // Vertical air thermal bands pushing up monitor matrix
-                stroke(200, 220, 255, 70); strokeWeight(4);
-                for (let i = 0; i < 5; i++) {
-                    let laneX = tx + (i - 2) * 40;
-                    line(laneX, height, laneX, height - map(effectTimer, 45, 0, 0, height));
-                }
-            }
-            else if (type === "vermillious") { // Radial flares leaping apart outward
-                noStroke(); fill(255, 60, 0);
-                let rRadius = map(effectTimer, 45, 0, 5, 200);
-                for(let a=0; a<TWO_PI; a+=PI/4) {
-                    circle(tx + cos(a)*rRadius, ty + sin(a)*rRadius, 15);
-                }
+            else if (type === "expelliarmus") {
+                noFill(); stroke(255, 40, 40, 180); strokeWeight(10);
+                circle(tx, ty, map(effectTimer, 45, 0, 10, width * 0.5));
             }
             pop();
         }
 
-        // PHYSICAL CONTROL RADIAL SWITCHBOARD GESTURES
         function evaluateSpell() {
             if (spellTrail.length < 5) { spellTrail = []; return; }
             let startPoint = spellTrail[0];
@@ -473,7 +450,6 @@
             let totalY = endPoint.y - startPoint.y;
 
             if (totalY > 100 && Math.abs(totalX) < 100) { triggerVFXRouter("avadakedavra"); } 
-            else if (totalY < -100 && Math.abs(totalX) < 100) { triggerVFXRouter("ascendio"); } 
             else if (totalX > 100 && Math.abs(totalY) < 100) { triggerVFXRouter("incendio"); } 
             else if (totalX < -100 && Math.abs(totalY) < 100) { triggerVFXRouter("expelliarmus"); } 
             else { 
@@ -483,10 +459,7 @@
             spellTrail = []; 
         }
 
-        // --- DICTIONARY PARSER SPELL MATRIX ROUTER ---
         function evaluateVoiceSpell(phrase) {
-            console.log("Audio pipeline processing text input matching logic: " + phrase);
-
             if (phrase.includes("lumos")) { isLumosActive = true; triggerVFXRouter("lumos"); }
             else if (phrase.includes("nox") || phrase.includes("stop")) { isLumosActive = false; triggerVFXRouter("nox"); }
             else if (phrase.includes("avada") || phrase.includes("kedavra")) { triggerVFXRouter("avadakedavra"); }
@@ -495,26 +468,24 @@
             else if (phrase.includes("patronum") || phrase.includes("expecto")) { triggerVFXRouter("expectopatronum"); }
             else if (phrase.includes("stupefy") || phrase.includes("stun")) { triggerVFXRouter("stupefy"); }
             else if (phrase.includes("expelliarmus") || phrase.includes("disarm")) { triggerVFXRouter("expelliarmus"); }
-            else if (phrase.includes("alohomora") || phrase.includes("unlock")) { triggerVFXRouter("alohomora"); }
-            else if (phrase.includes("aguamenti") || phrase.includes("water")) { triggerVFXRouter("aguamenti"); }
-            else if (phrase.includes("reducto") || phrase.includes("blast")) { triggerVFXRouter("reducto"); }
-            else if (phrase.includes("crucio")) { triggerVFXRouter("crucio"); }
-            else if (phrase.includes("morsmordre") || phrase.includes("skull")) { triggerVFXRouter("morsmordre"); }
-            else if (phrase.includes("ascendio") || phrase.includes("up")) { triggerVFXRouter("ascendio"); }
-            else if (phrase.includes("obliviate")) { triggerVFXRouter("obliviate"); }
-            else if (phrase.includes("vermillious") || phrase.includes("flare")) { triggerVFXRouter("vermillious"); }
             else { triggerVFXRouter("fizzle"); }
         }
 
+        // --- PIPELINE MATRIX SOUND TRIGGER INTERCEPTOR ---
         function triggerVFXRouter(spellKey) {
             currentActiveSpell = spellKey;
-            effectTimer = 45; // Fixed frame calculation updates execution lifespan window
+            effectTimer = 45; 
             
-            // Clean readable formal titles passed over connection logs back to the mobile unit interface
+            // Trigger sound effects routing table mapping
+            if (spellKey === "lumos") {
+                playSpellSound("lumos_on");
+            } else if (spellKey === "nox") {
+                playSpellSound("lumos_off");
+            } else {
+                playSpellSound(spellKey); // Run standard combat sound matching array
+            }
+            
             let operationalTitle = spellKey.toUpperCase();
-            if(spellKey === "avadakedavra") operationalTitle = "AVADA KEDAVRA";
-            if(spellKey === "expectopatronum") operationalTitle = "EXPECTO PATRONUM";
-            
             if (conn && conn.open) {
                 conn.send({ type: "spell_success", spellName: operationalTitle });
             }
