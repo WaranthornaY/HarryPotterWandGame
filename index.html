@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hogwarts Interactive Wand Monitor</title>
+    <title>Hogwarts VFX Wand Engine</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        body { margin: 0; background: #06060c; color: white; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; }
+        body { margin: 0; background: #040408; color: white; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; }
         
-        #ui-layer { position: absolute; z-index: 10; text-align: center; background: rgba(8, 8, 16, 0.95); padding: 25px; border-radius: 15px; border: 2px solid #8a2be2; width: 90%; max-width: 450px; box-shadow: 0 0 30px rgba(138, 43, 226, 0.4); }
+        #ui-layer { position: absolute; z-index: 10; text-align: center; background: rgba(5, 5, 12, 0.95); padding: 25px; border-radius: 15px; border: 2px solid #8a2be2; width: 90%; max-width: 450px; box-shadow: 0 0 30px rgba(138, 43, 226, 0.4); }
         input, button { padding: 15px; font-size: 18px; margin: 10px 0; border-radius: 8px; border: none; text-align: center; width: 100%; box-sizing: border-box; }
         input { background: #222; color: white; border: 1px solid #8a2be2; }
         button { background: #8a2be2; color: white; cursor: pointer; font-weight: bold; }
@@ -19,7 +19,7 @@
         #copy-btn { background: #333; color: #fff; font-size: 14px; padding: 8px 12px; width: auto; display: inline-block; margin-top: 5px; border: 1px solid #555; }
         #voice-btn { background: #ff0077; color: white; width: 80%; max-width: 250px; font-size: 22px; border-radius: 50px; box-shadow: 0 0 15px rgba(255, 0, 119, 0.4); margin-top: 20px; z-index: 20; }
         
-        #spell-guide { display: none; position: absolute; top: 20px; right: 20px; width: 260px; max-height: 85vh; background: rgba(10, 10, 20, 0.85); border: 1px solid #333; border-radius: 10px; padding: 15px; overflow-y: auto; text-align: left; font-size: 12px; font-family: monospace; z-index: 5; }
+        #spell-guide { display: none; position: absolute; top: 20px; right: 20px; width: 260px; max-height: 85vh; background: rgba(5, 5, 10, 0.85); border: 1px solid #333; border-radius: 10px; padding: 15px; overflow-y: auto; text-align: left; font-size: 12px; font-family: monospace; z-index: 5; }
         #spell-guide h3 { margin-top: 0; color: #00ffff; text-align: center; border-bottom: 1px solid #333; padding-bottom: 5px; }
         .guide-item { margin: 6px 0; border-bottom: 1px dashed #222; padding-bottom: 4px; }
         .guide-name { color: #fff; font-weight: bold; }
@@ -46,14 +46,22 @@
 
     <div id="spell-guide">
         <h3>📜 Spell Grimoire</h3>
-        <div class="guide-item"><span class="guide-name">Lumos</span><br><span class="guide-desc">Tip stays permanently lit white</span></div>
-        <div class="guide-item"><span class="guide-name">Nox</span><br><span class="guide-desc">Snuffs out Lumos light completely</span></div>
-        <div class="guide-item"><span class="guide-name">Expelliarmus</span><br><span class="guide-desc">Scarlet Red Burst</span></div>
-        <div class="guide-item"><span class="guide-name">Stupefy</span><br><span class="guide-desc">Ruby Red Beam Blast</span></div>
-        <div class="guide-item"><span class="guide-name">Protego</span><br><span class="guide-desc">Cyan Shield Aura</span></div>
-        <div class="guide-item"><span class="guide-name">Incendio</span><br><span class="guide-desc">Fiery Orange Flame Flare</span></div>
-        <div class="guide-item"><span class="guide-name">Expecto Patronum</span><br><span class="guide-desc">Brilliant Silver-Blue Glow</span></div>
-        <div class="guide-item"><span class="guide-name">Avada Kedavra</span><br><span class="guide-desc">Blinding Dark Green Flash</span></div>
+        <div class="guide-item"><span class="guide-name">Lumos</span><br><span class="guide-desc">Persistent light orb on wand tip</span></div>
+        <div class="guide-item"><span class="guide-name">Nox</span><br><span class="guide-desc">Snuffs out the light completely</span></div>
+        <div class="guide-item"><span class="guide-name">Avada Kedavra</span><br><span class="guide-desc">Violent green lightning crackles</span></div>
+        <div class="guide-item"><span class="guide-name">Protego</span><br><span class="guide-desc">Blue semi-transparent energy shield</span></div>
+        <div class="guide-item"><span class="guide-name">Incendio</span><br><span class="guide-desc">Billowing floating fire particles</span></div>
+        <div class="guide-item"><span class="guide-name">Expecto Patronum</span><br><span class="guide-desc">Swirling silver stardust vortex</span></div>
+        <div class="guide-item"><span class="guide-name">Stupefy</span><br><span class="guide-desc">Ruby red plasma beam burst</span></div>
+        <div class="guide-item"><span class="guide-name">Expelliarmus</span><br><span class="guide-desc">Expanding scarlet shockwave ring</span></div>
+        <div class="guide-item"><span class="guide-name">Alohomora</span><br><span class="guide-desc">Glittering copper opening sparks</span></div>
+        <div class="guide-item"><span class="guide-name">Aguamenti</span><br><span class="guide-desc">Fountain stream of fluid blue droplets</span></div>
+        <div class="guide-item"><span class="guide-name">Reducto</span><br><span class="guide-desc">Violent blue kinetic fracture blast</span></div>
+        <div class="guide-item"><span class="guide-name">Crucio</span><br><span class="guide-desc">Jagged deep red torture tendrils</span></div>
+        <div class="guide-item"><span class="guide-name">Morsmordre</span><br><span class="guide-desc">Eerie floating toxic green skull fog</span></div>
+        <div class="guide-item"><span class="guide-name">Ascendio</span><br><span class="guide-desc">Jetstream wind columns pushing upward</span></div>
+        <div class="guide-item"><span class="guide-name">Obliviate</span><br><span class="guide-desc">Slow-fading white memory fog rings</span></div>
+        <div class="guide-item"><span class="guide-name">Vermillious</span><br><span class="guide-desc">Bright red flares shooting outwards</span></div>
     </div>
 
     <div id="wand-pad">
@@ -70,10 +78,11 @@
         let handX = 0, handY = 0;         
         let isPhoneDrawing = false;
 
-        // Magical Visual States
-        let currentTipColor = [0, 0, 0, 0]; 
-        let burstTimer = 0;
-        let isLumosActive = false; // Persistent state engine toggle
+        // Visual Particle Sandbox States
+        let currentActiveSpell = "none";
+        let effectTimer = 0;
+        let isLumosActive = false;
+        let particles = [];
 
         let lastPitch = null, lastRoll = null;
 
@@ -166,7 +175,7 @@
 
         function startVoiceRecognition() {
             if (recognition) recognition.start();
-            else alert("Microphone engine blocked/not supported on this browser context.");
+            else alert("Microphone context blocked.");
         }
 
         function resetWandStatusDelay() {
@@ -239,90 +248,223 @@
             else noCanvas();
         }
 
-        // --- RENDER ENGINE WITH INTEGRATED HOLLY WAND & DYNAMIC GLOW ---
+        // --- VISUAL FX CORE DRAW ENGINE ---
         function draw() {
             if (isMobile) return;
+            background(5, 5, 10);
 
-            // Ambient environment light setup
-            if (isLumosActive) {
-                background(25, 28, 40); // Brightened room context
+            // 1. Core Wand Geometry Anchored at Bottom Center
+            let baseWandX = width / 2;
+            let baseWandY = height + 10;
+            let angle = atan2(handY - baseWandY, handX - baseWandX);
+            let lengthWand = 300;
+            let tipWandX = baseWandX + cos(angle) * lengthWand;
+            let tipWandY = baseWandY + sin(angle) * lengthWand;
+
+            // Draw Wood Wand Shaft
+            strokeWeight(12); stroke(60, 42, 30);
+            line(baseWandX, baseWandY, baseWandX + cos(angle)*70, baseWandY + sin(angle)*70);
+            strokeWeight(7); stroke(95, 68, 48);
+            line(baseWandX + cos(angle)*70, baseWandY + sin(angle)*70, tipWandX, tipWandY);
+
+            // 2. Continuous Particle Emitters Based On Triggered Spell
+            if (effectTimer > 0) {
+                generateSpellParticles(currentActiveSpell, tipWandX, tipWandY);
+                effectTimer--;
             } else {
-                background(8, 8, 16);  // Pitch black dungeon ambient
+                currentActiveSpell = "none";
             }
 
-            // Draw gesture trail lines
-            noFill(); strokeWeight(8);
-            for (let i = 1; i < spellTrail.length; i++) {
-                let alpha = map(i, 0, spellTrail.length, 0, 200);
-                stroke(255, 220, 100, alpha); 
-                line(spellTrail[i-1].x, spellTrail[i-1].y, spellTrail[i].x, spellTrail[i].y);
+            // Lumos Persistent Ambient Overlay Handler
+            if (isLumosActive) {
+                generateSpellParticles("lumos", tipWandX, tipWandY);
             }
 
-            // --- 1. COMPUTING INTERACTIVE WAND GEOMETRY ---
-            let wandBaseX = width / 2;
-            let wandBaseY = height + 20; // Anchorage origin at bottom center monitor window
-            
-            // Vector trajectory calculation pointing to current cursor target pointer coordinate
-            let targetX = handX;
-            let targetY = handY;
-            let angle = atan2(targetY - wandBaseY, targetX - wandBaseX);
-            
-            let wandLength = 320;
-            let tipX = wandBaseX + cos(angle) * wandLength;
-            let tipY = wandBaseY + sin(angle) * wandLength;
-
-            // --- 2. RENDERING CORED WAND BODY MESH ---
-            push();
-            strokeWeight(16); // Handle thickness base taper
-            stroke(74, 50, 34); // Deep Mahogany Wood brown
-            line(wandBaseX, wandBaseY, wandBaseX + cos(angle)*80, wandBaseY + sin(angle)*80);
-            
-            strokeWeight(8); // Tapering main wand shaft extension
-            stroke(110, 78, 55); 
-            line(wandBaseX + cos(angle)*80, wandBaseY + sin(angle)*80, tipX, tipY);
-            
-            // Ivory banding trim accent ring embellishments
-            strokeWeight(10); stroke(220, 210, 190);
-            point(wandBaseX + cos(angle)*80, wandBaseY + sin(angle)*80);
-            pop();
-
-            // --- 3. DYNAMIC SPELL FLASH & PERSISTENT LUMOS COMPILER ---
-            let renderColor = [0, 0, 0, 0];
-            let currentRadius = 0;
-
-            if (burstTimer > 0) {
-                // Flash active override context window logic
-                renderColor = currentTipColor;
-                currentRadius = map(burstTimer, 0, 40, 10, 160);
-                burstTimer--;
-            } else if (isLumosActive) {
-                // If temporary blast finishes, check if Lumos is staying on
-                renderColor = [255, 255, 255, 245];
-                currentRadius = 35 + sin(frameCount * 0.1) * 4; // Organic soft flame vibration flickers
+            // 3. Process, Step, Render Particle Simulation Arrays
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.update();
+                p.display();
+                if (p.isDead()) particles.splice(i, 1);
             }
 
-            // Execute particle light layering logic to build highly reflective nested glow effects
-            if (currentRadius > 0) {
-                // Level 3 Ambient outer atmospheric aura illumination dispersion field
-                fill(renderColor[0], renderColor[1], renderColor[2], renderColor[3] * 0.15);
-                noStroke();
-                circle(tipX, tipY, currentRadius * 2.5);
-
-                // Level 2 Mid-tier pressurized magical core density shell
-                fill(renderColor[0], renderColor[1], renderColor[2], renderColor[3] * 0.4);
-                circle(tipX, tipY, currentRadius * 1.2);
-
-                // Level 1 Bright ignition center core focal mass node
-                fill(255, 255, 255, renderColor[3]);
-                circle(tipX, tipY, currentRadius * 0.4);
+            // 4. Heavyweight Custom Line/Complex Effect Generators Overlaid Direct
+            if (effectTimer > 0) {
+                renderComplexVFXOverlay(currentActiveSpell, tipWandX, tipWandY);
             }
 
-            // Standard navigation target point reference tracking orb marker
-            fill(255, 255, 255, 60);
-            circle(targetX, targetY, 12);
+            // Draw target tracking reticle
+            fill(255, 255, 255, 40); noStroke();
+            circle(handX, handY, 14);
         }
 
-        // PHYSICAL CONTROL ROUTER GESTURE TRANSLATOR
+        // --- ADVANCED STRUCTURAL PARTICLE ARCHITECTURE ---
+        class SpellParticle {
+            constructor(x, y, vx, vy, r, g, b, size, lifeSpan, behavior="rise") {
+                this.x = x; this.y = y;
+                this.vx = vx; this.vy = vy;
+                this.r = r; this.g = g; this.b = b;
+                this.maxSize = size; this.size = size;
+                this.life = lifeSpan; this.maxLife = lifeSpan;
+                this.behavior = behavior;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                this.life -= 4;
+                this.size = map(this.life, 0, this.maxLife, 0, this.maxSize);
+                
+                if (this.behavior === "rise") this.vy -= 0.1; // Float like smoke/fire
+                if (this.behavior === "sink") this.vy += 0.05;
+                if (this.behavior === "vortex") {
+                    let angleSpeed = 0.15;
+                    let speed = dist(0, 0, this.vx, this.vy);
+                    let curAngle = atan2(this.vy, this.vx) + angleSpeed;
+                    this.vx = cos(curAngle) * speed * 0.98;
+                    this.vy = sin(curAngle) * speed * 0.98;
+                }
+            }
+            display() {
+                if (this.life <= 0) return;
+                push();
+                noStroke();
+                fill(this.r, this.g, this.b, map(this.life, 0, this.maxLife, 0, 230));
+                circle(this.x, this.y, this.size);
+                // Inner core highlights
+                fill(255, 255, 255, map(this.life, 0, this.maxLife, 0, 150));
+                circle(this.x, this.y, this.size * 0.4);
+                pop();
+            }
+            isDead() { return this.life <= 0; }
+        }
+
+        // --- PROCEDURAL EMITTER TRANSLATOR ---
+        function generateSpellParticles(type, tx, ty) {
+            // High Volume Burst Logic mapped to draw cycle rates
+            if (type === "incendio") { // Fire
+                for (let i = 0; i < 4; i++) {
+                    particles.push(new SpellParticle(tx, ty, random(-2, 2), random(-3, -0.5), 255, random(50, 130), 0, random(15, 30), 255, "rise"));
+                }
+            }
+            else if (type === "expectopatronum") { // Swirling Silver Vortex
+                for (let i = 0; i < 5; i++) {
+                    let angle = random(TWO_PI); let speed = random(3, 8);
+                    particles.push(new SpellParticle(tx, ty, cos(angle)*speed, sin(angle)*speed, 190, 220, 255, random(10, 25), 200, "vortex"));
+                }
+            }
+            else if (type === "lumos") { // Glowing hum orb
+                if (random(1) < 0.4) {
+                    particles.push(new SpellParticle(tx + random(-5,5), ty + random(-5,5), random(-0.5, 0.5), random(-0.5, 0.5), 255, 255, 255, random(8, 16), 100, "rise"));
+                }
+            }
+            else if (type === "aguamenti") { // Water jet
+                let targetAngle = atan2(handY - ty, handX - tx);
+                for(let i=0; i<3; i++) {
+                    let spreadAngle = targetAngle + random(-0.15, 0.15);
+                    let speed = random(7, 12);
+                    particles.push(new SpellParticle(tx, ty, cos(spreadAngle)*speed, sin(spreadAngle)*speed, 30, 144, 255, random(8, 16), 150, "sink"));
+                }
+            }
+            else if (type === "alohomora") { // Copper sparks
+                for (let i = 0; i < 3; i++) {
+                    particles.push(new SpellParticle(tx, ty, random(-3, 3), random(-3, 3), 222, 130, 50, random(6, 12), 120, "sink"));
+                }
+            }
+            else if (type === "morsmordre") { // Green toxic skull smoke
+                for (let i = 0; i < 3; i++) {
+                    particles.push(new SpellParticle(tx, ty, random(-1.5, 1.5), random(-2, -0.5), random(40,80), 230, random(50,100), random(20, 45), 255, "rise"));
+                }
+            }
+            else if (type === "obliviate") { // Pure white fog
+                for (let i = 0; i < 2; i++) {
+                    particles.push(new SpellParticle(tx, ty, random(-1, 1), random(-1, 1), 220, 220, 220, random(25, 50), 200, "rise"));
+                }
+            }
+        }
+
+        // --- COMPLEX LINE-DRAW HEAVY OVERLAY GRAPHICS RENDERS ---
+        function renderComplexVFXOverlay(type, tx, ty) {
+            push();
+            if (type === "avadakedavra") { // Complex Green Lightning Line Striking from Wand Tip to Cursor Hand
+                stroke(0, 230, 80); strokeWeight(random(3, 7)); noFill();
+                let curX = tx; let curY = ty;
+                let steps = 12;
+                beginShape();
+                vertex(curX, curY);
+                for (let i = 1; i <= steps; i++) {
+                    let t = i / steps;
+                    let targetXPoint = lerp(tx, handX, t);
+                    let targetYPoint = lerp(ty, handY, t);
+                    if (i < steps) {
+                        curX = targetXPoint + random(-30, 30);
+                        curY = targetYPoint + random(-30, 30);
+                    } else {
+                        curX = handX; curY = handY;
+                    }
+                    vertex(curX, curY);
+                }
+                endShape();
+                // Secondary flashing core aura line
+                stroke(255,255,255); strokeWeight(2);
+                line(tx, ty, handX, handY);
+            }
+            else if (type === "protego") { // Translucent Shifting Shield Dome overlay surrounding target reticle
+                noFill();
+                for (let i = 0; i < 4; i++) {
+                    let shieldAlpha = map(i, 0, 4, 10, 80);
+                    stroke(0, 191, 255, shieldAlpha);
+                    strokeWeight(4);
+                    let waveSize = 130 + sin(frameCount * 0.2 + i)*15;
+                    fill(0, 120, 255, 3);
+                    circle(handX, handY, waveSize);
+                }
+            }
+            else if (type === "stupefy") { // Concentrated plasma laser beam vector
+                stroke(255, 0, 50, 200); strokeWeight(14);
+                line(tx, ty, handX, handY);
+                stroke(255, 255, 255); strokeWeight(4);
+                line(tx, ty, handX, handY);
+                fill(255, 50, 50); noStroke();
+                circle(handX, handY, random(35, 60));
+            }
+            else if (type === "expelliarmus") { // Concentrated expanding kinetic blast wave ring
+                noFill(); stroke(255, 40, 40, 180);
+                let shockwaveDiameter = map(effectTimer, 45, 0, 10, width * 0.6);
+                strokeWeight(10);
+                circle(tx, ty, shockwaveDiameter);
+            }
+            else if (type === "reducto") { // Instantaneous fracturing matrix blue structural arrays
+                stroke(0, 100, 255); strokeWeight(2);
+                for(let i=0; i<8; i++){
+                    line(handX, handY, handX + random(-80,80), handY + random(-80,80));
+                }
+                fill(255); circle(handX, handY, 40);
+            }
+            else if (type === "crucio") { // Unstable torturous red chaotic thread lines snapping randomly
+                stroke(180, 0, 0); strokeWeight(3); noFill();
+                beginShape();
+                for(let i=0; i<10; i++) {
+                    vertex(lerp(tx, handX, i/10) + random(-25,25), lerp(ty, handY, i/10) + random(-25,25));
+                }
+                endShape();
+            }
+            else if (type === "ascendio") { // Vertical air thermal bands pushing up monitor matrix
+                stroke(200, 220, 255, 70); strokeWeight(4);
+                for (let i = 0; i < 5; i++) {
+                    let laneX = tx + (i - 2) * 40;
+                    line(laneX, height, laneX, height - map(effectTimer, 45, 0, 0, height));
+                }
+            }
+            else if (type === "vermillious") { // Radial flares leaping apart outward
+                noStroke(); fill(255, 60, 0);
+                let rRadius = map(effectTimer, 45, 0, 5, 200);
+                for(let a=0; a<TWO_PI; a+=PI/4) {
+                    circle(tx + cos(a)*rRadius, ty + sin(a)*rRadius, 15);
+                }
+            }
+            pop();
+        }
+
+        // PHYSICAL CONTROL RADIAL SWITCHBOARD GESTURES
         function evaluateSpell() {
             if (spellTrail.length < 5) { spellTrail = []; return; }
             let startPoint = spellTrail[0];
@@ -330,45 +472,51 @@
             let totalX = endPoint.x - startPoint.x;
             let totalY = endPoint.y - startPoint.y;
 
-            if (totalY > 100 && Math.abs(totalX) < 100) { triggerSpellResult("Avada Kedavra", [0, 200, 70]); } 
-            else if (totalY < -100 && Math.abs(totalX) < 100) { triggerSpellResult("Ascendio", [100, 150, 255]); } 
-            else if (totalX > 100 && Math.abs(totalY) < 100) { triggerSpellResult("Incendio", [255, 75, 0]); } 
-            else if (totalX < -100 && Math.abs(totalY) < 100) { triggerSpellResult("Expelliarmus", [255, 20, 20]); } 
+            if (totalY > 100 && Math.abs(totalX) < 100) { triggerVFXRouter("avadakedavra"); } 
+            else if (totalY < -100 && Math.abs(totalX) < 100) { triggerVFXRouter("ascendio"); } 
+            else if (totalX > 100 && Math.abs(totalY) < 100) { triggerVFXRouter("incendio"); } 
+            else if (totalX < -100 && Math.abs(totalY) < 100) { triggerVFXRouter("expelliarmus"); } 
             else { 
-                // Default fallback physical gesture sets off persistent Lumos illumination
                 isLumosActive = true;
-                triggerSpellResult("Lumos", [255, 255, 255]); 
+                triggerVFXRouter("lumos"); 
             }
             spellTrail = []; 
         }
 
-        // VOICE DICTIONARY SPELL PARSER
+        // --- DICTIONARY PARSER SPELL MATRIX ROUTER ---
         function evaluateVoiceSpell(phrase) {
-            console.log("Parsing magical text voice audio input node: " + phrase);
+            console.log("Audio pipeline processing text input matching logic: " + phrase);
 
-            if (phrase.includes("lumos") || phrase.includes("light")) {
-                isLumosActive = true; 
-                triggerSpellResult("Lumos", [255, 255, 255]);
-            }
-            else if (phrase.includes("nox") || phrase.includes("dark") || phrase.includes("stop")) {
-                isLumosActive = false; 
-                triggerSpellResult("Nox", [15, 20, 45]);
-            }
-            else if (phrase.includes("expelliarmus") || phrase.includes("disarm")) { triggerSpellResult("Expelliarmus", [255, 20, 20]); }
-            else if (phrase.includes("stupefy") || phrase.includes("stun")) { triggerSpellResult("Stupefy", [240, 0, 40]); }
-            else if (phrase.includes("protego") || phrase.includes("shield")) { triggerSpellResult("Protego", [0, 240, 255]); }
-            else if (phrase.includes("incendio") || phrase.includes("fire")) { triggerSpellResult("Incendio", [255, 75, 0]); }
-            else if (phrase.includes("patronum") || phrase.includes("expecto")) { triggerSpellResult("Expecto Patronum", [200, 230, 255]); }
-            else if (phrase.includes("avada") || phrase.includes("kedavra") || phrase.includes("kill")) { triggerSpellResult("Avada Kedavra", [0, 200, 70]); }
-            else { triggerSpellResult("Spell Fizzled", [120, 30, 160]); }
+            if (phrase.includes("lumos")) { isLumosActive = true; triggerVFXRouter("lumos"); }
+            else if (phrase.includes("nox") || phrase.includes("stop")) { isLumosActive = false; triggerVFXRouter("nox"); }
+            else if (phrase.includes("avada") || phrase.includes("kedavra")) { triggerVFXRouter("avadakedavra"); }
+            else if (phrase.includes("protego") || phrase.includes("shield")) { triggerVFXRouter("protego"); }
+            else if (phrase.includes("incendio") || phrase.includes("fire")) { triggerVFXRouter("incendio"); }
+            else if (phrase.includes("patronum") || phrase.includes("expecto")) { triggerVFXRouter("expectopatronum"); }
+            else if (phrase.includes("stupefy") || phrase.includes("stun")) { triggerVFXRouter("stupefy"); }
+            else if (phrase.includes("expelliarmus") || phrase.includes("disarm")) { triggerVFXRouter("expelliarmus"); }
+            else if (phrase.includes("alohomora") || phrase.includes("unlock")) { triggerVFXRouter("alohomora"); }
+            else if (phrase.includes("aguamenti") || phrase.includes("water")) { triggerVFXRouter("aguamenti"); }
+            else if (phrase.includes("reducto") || phrase.includes("blast")) { triggerVFXRouter("reducto"); }
+            else if (phrase.includes("crucio")) { triggerVFXRouter("crucio"); }
+            else if (phrase.includes("morsmordre") || phrase.includes("skull")) { triggerVFXRouter("morsmordre"); }
+            else if (phrase.includes("ascendio") || phrase.includes("up")) { triggerVFXRouter("ascendio"); }
+            else if (phrase.includes("obliviate")) { triggerVFXRouter("obliviate"); }
+            else if (phrase.includes("vermillious") || phrase.includes("flare")) { triggerVFXRouter("vermillious"); }
+            else { triggerVFXRouter("fizzle"); }
         }
 
-        function triggerSpellResult(name, rgbColor) {
-            currentTipColor = [rgbColor[0], rgbColor[1], rgbColor[2], 255];
-            burstTimer = 40; // Sets up animation lifespan ticks for transient explosions
+        function triggerVFXRouter(spellKey) {
+            currentActiveSpell = spellKey;
+            effectTimer = 45; // Fixed frame calculation updates execution lifespan window
+            
+            // Clean readable formal titles passed over connection logs back to the mobile unit interface
+            let operationalTitle = spellKey.toUpperCase();
+            if(spellKey === "avadakedavra") operationalTitle = "AVADA KEDAVRA";
+            if(spellKey === "expectopatronum") operationalTitle = "EXPECTO PATRONUM";
             
             if (conn && conn.open) {
-                conn.send({ type: "spell_success", spellName: name, color: "rgb(" + rgbColor.join(",") + ")" });
+                conn.send({ type: "spell_success", spellName: operationalTitle });
             }
         }
 
