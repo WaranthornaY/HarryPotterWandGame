@@ -3,36 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hogwarts Web Wand Game</title>
+    <title>Hogwarts 30-Spell Web Wand Game</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         body { margin: 0; background: #0b0b14; color: white; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; }
         
-        /* FIX: Removed body-wide user-select none so laptop text can be highlighted normally */
-        #ui-layer { position: absolute; z-index: 10; text-align: center; background: rgba(11, 11, 20, 0.95); padding: 30px; border-radius: 15px; border: 2px solid #8a2be2; width: 80%; max-width: 400px; }
+        #ui-layer { position: absolute; z-index: 10; text-align: center; background: rgba(11, 11, 20, 0.95); padding: 25px; border-radius: 15px; border: 2px solid #8a2be2; width: 90%; max-width: 450px; box-shadow: 0 0 30px rgba(138, 43, 226, 0.4); }
         input, button { padding: 15px; font-size: 18px; margin: 10px 0; border-radius: 8px; border: none; text-align: center; width: 100%; box-sizing: border-box; }
         input { background: #222; color: white; border: 1px solid #8a2be2; }
         button { background: #8a2be2; color: white; cursor: pointer; font-weight: bold; }
         #permission-btn { background: #00ffcc; color: #000; display: none; }
         
-        /* Keep user-select none strictly on the phone wand interface so holding your thumb doesn't highlight text */
         #wand-pad { width: 100vw; height: 100vh; display: none; background: #111; justify-content: center; align-items: center; flex-direction: column; touch-action: none; user-select: none; -webkit-user-select: none; }
-        
         #copy-btn { background: #333; color: #fff; font-size: 14px; padding: 8px 12px; width: auto; display: inline-block; margin-top: 5px; border: 1px solid #555; }
-        #copy-btn:hover { background: #444; }
+        #voice-btn { background: #ff0077; color: white; width: 80%; max-width: 250px; font-size: 22px; border-radius: 50px; box-shadow: 0 0 15px rgba(255, 0, 119, 0.4); margin-top: 20px; z-index: 20; }
+        
+        /* Laptop UI Scrollable Spell Guide Overlay */
+        #spell-guide { display: none; position: absolute; top: 20px; right: 20px; width: 280px; max-height: 85vh; background: rgba(15, 15, 30, 0.85); border: 1px solid #444; border-radius: 10px; padding: 15px; overflow-y: auto; text-align: left; font-size: 13px; font-family: monospace; z-index: 5; }
+        #spell-guide h3 { margin-top: 0; color: #00ffff; text-align: center; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        .guide-item { margin: 8px 0; border-bottom: 1px dashed #333; padding-bottom: 4px; }
+        .guide-name { color: #fff; font-weight: bold; }
+        .guide-desc { color: #aaa; }
     </style>
 </head>
 <body>
 
+    <!-- MONITOR / PHONE INITIAL UI -->
     <div id="ui-layer">
         <h2 id="title">Detecting Magical Device...</h2>
         
         <div id="laptop-setup" style="display:none;">
             <p>On your PHONE, open this exact website link.</p>
             <p>Then type this Secret Wand ID into your phone:</p>
-            <!-- Clean text styling allowing direct mouse cursor highlighting -->
-            <h1 id="room-id" style="color: #00ffff; font-size: 42px; margin-bottom: 5px; -webkit-user-select: text; user-select: text;">Generating...</h1>
+            <h1 id="room-id" style="color: #00ffff; font-size: 42px; margin-bottom: 5px; user-select: text; -webkit-user-select: text;">Generating...</h1>
             <button id="copy-btn" onclick="copyRoomID()">📋 Copy ID</button>
             <p style="margin-top: 20px;">Waiting for your phone wand to connect...</p>
         </div>
@@ -44,9 +48,48 @@
         </div>
     </div>
 
+    <!-- LAPTOP INTERACTIVE SPELL CHEAT SHEET -->
+    <div id="spell-guide">
+        <h3>📜 Spell Grimoire</h3>
+        <div class="guide-item"><span class="guide-name">Lumos</span><br><span class="guide-desc">Flash White (Circle/Shake/Speak)</span></div>
+        <div class="guide-item"><span class="guide-name">Nox</span><br><span class="guide-desc">Darkness (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Alohomora</span><br><span class="guide-desc">Copper Glow (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Reparo</span><br><span class="guide-desc">Golden/Brown Pulse (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Accio</span><br><span class="guide-desc">Light Blue Magnet (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Scourgify</span><br><span class="guide-desc">Bubble Foam Teal (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Tergeo</span><br><span class="guide-desc">Vortex Maroon (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Pack</span><br><span class="guide-desc">Leather Tan Beam (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Expelliarmus</span><br><span class="guide-desc">Scarlet Flash (Left Slash / Speak)</span></div>
+        <div class="guide-item"><span class="guide-name">Stupefy</span><br><span class="guide-desc">Ruby Red Burst (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Protego</span><br><span class="guide-desc">Cyan Shield Sparkle (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Petrificus Totalus</span><br><span class="guide-desc">Pale Gray Lock (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Impedimenta</span><br><span class="guide-desc">Turquoise Halt (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Incarcerous</span><br><span class="guide-desc">Brown Rope Wrap (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Reducto</span><br><span class="guide-desc">Blue Explosion (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Expulso</span><br><span class="guide-desc">Deep Indigo Shock (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Wingardium Leviosa</span><br><span class="guide-desc">Feather Gold (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Ascendio</span><br><span class="guide-desc">Sky Blue Lift (Up Slash / Speak)</span></div>
+        <div class="guide-item"><span class="guide-name">Descendo</span><br><span class="guide-desc">Gravity Purple Drop (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Arresto Momentum</span><br><span class="guide-desc">Slow-Mo Chrome Teal (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Aguamenti</span><br><span class="guide-desc">Ocean Water Blue (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Incendio</span><br><span class="guide-desc">Flame Orange (Right Slash / Speak)</span></div>
+        <div class="guide-item"><span class="guide-name">Obliviate</span><br><span class="guide-desc">Memory Fog Silver (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Legilimens</span><br><span class="guide-desc">Mind Violet Glow (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Expecto Patronum</span><br><span class="guide-desc">Brilliant Cosmic Silver (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Sectumsempra</span><br><span class="guide-desc">Crimson Slits (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Morsmordre</span><br><span class="guide-desc">Ghostly Mint Dark Mark (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Imperio</span><br><span class="guide-desc">Hazy Yellow Hypnosis (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Crucio</span><br><span class="guide-desc">Agony Deep Red (Speak Only)</span></div>
+        <div class="guide-item"><span class="guide-name">Avada Kedavra</span><br><span class="guide-desc">Emerald Killing Green (Down Slash / Speak)</span></div>
+    </div>
+
+    <!-- PHONE CONTROLLER PAD UI -->
     <div id="wand-pad">
         <h2 id="wand-status" style="color: #666;">Wand Disconnected</h2>
-        <p style="color: #aaa; text-align: center; padding: 0 20px; font-size: 18px;">PRESS & HOLD your thumb down, slash your phone UP/DOWN/LEFT/RIGHT, then release to cast!</p>
+        <p style="color: #aaa; text-align: center; padding: 0 20px; font-size: 16px; margin-bottom: 5px;">A: PRESS & HOLD thumb to cast with physical slashes</p>
+        <p style="color: #666; text-align: center; font-size: 14px;">— OR —</p>
+        <p style="color: #aaa; text-align: center; padding: 0 20px; font-size: 16px;">B: Tap button below and say any of the 30 spells!</p>
+        <button id="voice-btn" onclick="startVoiceRecognition()">🎙️ Voice Spell</button>
     </div>
 
     <script>
@@ -61,13 +104,23 @@
         let lastPitch = null;
         let lastRoll = null;
 
+        // Native Browser Audio Systems Engine Hooks
+        let SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+        if (recognition) {
+            recognition.continuous = false;
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+        }
+
         window.onload = function() {
             peer = new Peer();
 
             if (isMobile) {
                 document.getElementById('title').innerText = "🧙‍♂️ Wand Controller";
                 document.getElementById('phone-setup').style.display = "block";
-                
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     document.getElementById('permission-btn').style.display = "block";
                 }
@@ -79,12 +132,12 @@
                 peer.on('connection', (incomingConn) => {
                     conn = incomingConn;
                     document.getElementById('ui-layer').style.display = "none";
+                    document.getElementById('spell-guide').style.display = "block"; // Open grimoire overlay
                     setupDataListeners();
                 });
             }
         };
 
-        // Automatic clipboard utility for the laptop layout
         function copyRoomID() {
             let roomIdText = document.getElementById('room-id').innerText;
             if(roomIdText && roomIdText !== "Generating...") {
@@ -118,18 +171,54 @@
                 document.getElementById('wand-status').innerText = "Wand Linked ✨";
                 document.getElementById('wand-status').style.color = "#00ffff";
                 setupPhoneSensors();
+                setupVoiceEngine();
             });
+        }
+
+        function setupVoiceEngine() {
+            if (!recognition) return;
+
+            recognition.onstart = function() {
+                document.getElementById('wand-status').innerText = "Listening... 📻";
+                document.getElementById('wand-status').style.color = "#ff0077";
+            };
+            recognition.onspeechend = function() { recognition.stop(); };
+            recognition.onerror = function() {
+                document.getElementById('wand-status').innerText = "Try speaking again!";
+                document.getElementById('wand-status').style.color = "#ff0000";
+                resetWandStatusDelay();
+            };
+            recognition.onresult = function(event) {
+                let spokenPhrase = event.results[0][0].transcript.toLowerCase().trim();
+                if (conn && conn.open) {
+                    conn.send({ type: "voice_spell", phrase: spokenPhrase });
+                }
+            };
+        }
+
+        function startVoiceRecognition() {
+            if (recognition) recognition.start();
+            else alert("Microphone engine blocked/not supported on this browser context.");
+        }
+
+        function resetWandStatusDelay() {
+            setTimeout(() => {
+                document.getElementById('wand-status').innerText = "Wand Linked ✨";
+                document.getElementById('wand-status').style.color = "#00ffff";
+            }, 2000);
         }
 
         function setupPhoneSensors() {
             let wandPad = document.getElementById('wand-pad');
             
             wandPad.addEventListener('touchstart', (e) => { 
+                if (e.target.id === "voice-btn") return;
                 e.preventDefault();
                 conn.send({ type: "draw_state", drawing: true }); 
                 wandPad.style.background = "#220033"; 
             });
             wandPad.addEventListener('touchend', (e) => { 
+                if (e.target.id === "voice-btn") return;
                 e.preventDefault();
                 conn.send({ type: "draw_state", drawing: false }); 
                 wandPad.style.background = "#111";
@@ -149,11 +238,7 @@
                     if (Math.abs(deltaRoll) > 50) deltaRoll = 0;
                     if (Math.abs(deltaPitch) > 50) deltaPitch = 0;
 
-                    conn.send({
-                        type: "angle_delta",
-                        dRoll: deltaRoll,
-                        dPitch: deltaPitch
-                    });
+                    conn.send({ type: "angle_delta", dRoll: deltaRoll, dPitch: deltaPitch });
 
                     lastPitch = currentPitch;
                     lastRoll = currentRoll;
@@ -164,42 +249,34 @@
                 if (data.type === "spell_success") {
                     wandPad.style.backgroundColor = data.color;
                     document.getElementById('wand-status').innerText = data.spellName.toUpperCase() + "!";
+                    document.getElementById('wand-status').style.color = "#fff";
                     
-                    if (navigator.vibrate) {
-                        navigator.vibrate([150, 50, 100]); 
-                    }
-
+                    if (navigator.vibrate) { navigator.vibrate([150, 50, 100]); }
                     setTimeout(() => {
                         wandPad.style.backgroundColor = "#111";
                         document.getElementById('wand-status').innerText = "Wand Linked ✨";
+                        document.getElementById('wand-status').style.color = "#00ffff";
                     }, 2000);
                 }
             });
         }
 
         function setupDataListeners() {
-            handX = width / 2;
-            handY = height / 2;
+            handX = width / 2; handY = height / 2;
 
             conn.on('data', (data) => {
                 if (data.type === "draw_state") {
                     isPhoneDrawing = data.drawing;
-                    if (!isPhoneDrawing) {
-                        evaluateSpell(); 
-                    }
+                    if (!isPhoneDrawing) evaluateSpell(); 
                 }
-                
                 if (data.type === "angle_delta") {
                     handX += data.dRoll * 4.5;
                     handY -= data.dPitch * 4.5; 
-
                     handX = constrain(handX, 0, width);
                     handY = constrain(handY, 0, height);
-
-                    if (isPhoneDrawing) {
-                        spellTrail.push({ x: handX, y: handY });
-                    }
+                    if (isPhoneDrawing) spellTrail.push({ x: handX, y: handY });
                 }
+                if (data.type === "voice_spell") evaluateVoiceSpell(data.phrase);
             });
         }
 
@@ -212,28 +289,20 @@
             if (isMobile) return;
             background(currentBackgroundColor[0], currentBackgroundColor[1], currentBackgroundColor[2]);
 
-            noFill();
-            strokeWeight(12);
+            noFill(); strokeWeight(12);
             for (let i = 1; i < spellTrail.length; i++) {
                 let alpha = map(i, 0, spellTrail.length, 0, 255);
                 stroke(255, 215, 0, alpha); 
                 line(spellTrail[i-1].x, spellTrail[i-1].y, spellTrail[i].x, spellTrail[i].y);
             }
-
-            fill(255, 255, 200);
-            noStroke();
-            circle(handX, handY, 30);
+            fill(255, 255, 200); noStroke(); circle(handX, handY, 30);
         }
 
+        // PHYSICAL GESTURE MATCHER
         function evaluateSpell() {
-            if (spellTrail.length < 5) {
-                spellTrail = [];
-                return;
-            }
-
+            if (spellTrail.length < 5) { spellTrail = []; return; }
             let startPoint = spellTrail[0];
             let endPoint = spellTrail[spellTrail.length - 1];
-            
             let totalX = endPoint.x - startPoint.x;
             let totalY = endPoint.y - startPoint.y;
 
@@ -243,11 +312,60 @@
                 triggerSpellResult("Ascendio", [100, 150, 255]);   
             } else if (totalX > 100 && Math.abs(totalY) < 100) {
                 triggerSpellResult("Incendio", [255, 69, 0]);      
+            } else if (totalX < -100 && Math.abs(totalY) < 100) {
+                triggerSpellResult("Expelliarmus", [255, 30, 30]); 
             } else {
                 triggerSpellResult("Lumos", [255, 255, 255]);      
             }
-
             spellTrail = []; 
+        }
+
+        // --- MASTER 30-SPELL DICTIONARY ROUTER ---
+        function evaluateVoiceSpell(phrase) {
+            console.log("Grimoire tracking phrase match: " + phrase);
+
+            // 1-8: Utility Spells
+            if (phrase.includes("lumos") || phrase.includes("light")) { triggerSpellResult("Lumos", [255, 255, 255]); }
+            else if (phrase.includes("nox") || phrase.includes("dark")) { triggerSpellResult("Nox", [3, 3, 10]); }
+            else if (phrase.includes("alohomora") || phrase.includes("unlock")) { triggerSpellResult("Alohomora", [222, 130, 50]); }
+            else if (phrase.includes("reparo") || phrase.includes("fix")) { triggerSpellResult("Reparo", [139, 90, 43]); }
+            else if (phrase.includes("accio") || phrase.includes("summon")) { triggerSpellResult("Accio", [135, 206, 250]); }
+            else if (phrase.includes("scourgify") || phrase.includes("clean")) { triggerSpellResult("Scourgify", [0, 230, 180]); }
+            else if (phrase.includes("tergeo")) { triggerSpellResult("Tergeo", [100, 20, 50]); }
+            else if (phrase.includes("pack")) { triggerSpellResult("Pack", [180, 140, 100]); }
+            
+            // 9-16: Combat & Defense Spells
+            else if (phrase.includes("expelliarmus") || phrase.includes("disarm")) { triggerSpellResult("Expelliarmus", [255, 30, 30]); }
+            else if (phrase.includes("stupefy") || phrase.includes("stun")) { triggerSpellResult("Stupefy", [200, 0, 0]); }
+            else if (phrase.includes("protego") || phrase.includes("shield")) { triggerSpellResult("Protego", [0, 255, 255]); }
+            else if (phrase.includes("petrificus") || phrase.includes("freeze")) { triggerSpellResult("Petrificus Totalus", [180, 180, 190]); }
+            else if (phrase.includes("impedimenta") || phrase.includes("slow")) { triggerSpellResult("Impedimenta", [64, 224, 208]); }
+            else if (phrase.includes("incarcerous") || phrase.includes("rope")) { triggerSpellResult("Incarcerous", [90, 60, 40]); }
+            else if (phrase.includes("reducto") || phrase.includes("blast")) { triggerSpellResult("Reducto", [30, 144, 255]); }
+            else if (phrase.includes("expulso") || phrase.includes("explode")) { triggerSpellResult("Expulso", [75, 0, 130]); }
+            
+            // 17-22: Movement & Conjuration Spells
+            else if (phrase.includes("wingardium") || phrase.includes("leviosa")) { triggerSpellResult("Wingardium Leviosa", [240, 230, 140]); }
+            else if (phrase.includes("ascendio") || phrase.includes("up")) { triggerSpellResult("Ascendio", [100, 150, 255]); }
+            else if (phrase.includes("descendo") || phrase.includes("down")) { triggerSpellResult("Descendo", [120, 40, 180]); }
+            else if (phrase.includes("arresto") || phrase.includes("momentum")) { triggerSpellResult("Arresto Momentum", [0, 150, 150]); }
+            else if (phrase.includes("aguamenti") || phrase.includes("water")) { triggerSpellResult("Aguamenti", [30, 144, 255]); }
+            else if (phrase.includes("incendio") || phrase.includes("fire")) { triggerSpellResult("Incendio", [255, 69, 0]); }
+            
+            // 23-25: Mind & Memory Magic
+            else if (phrase.includes("obliviate") || phrase.includes("forget")) { triggerSpellResult("Obliviate", [200, 200, 220]); }
+            else if (phrase.includes("legilimens")) { triggerSpellResult("Legilimens", [148, 0, 211]); }
+            else if (phrase.includes("patronum") || phrase.includes("expecto")) { triggerSpellResult("Expecto Patronum", [224, 240, 255]); }
+            
+            // 26-30: Dark Arts & Unforgivables
+            else if (phrase.includes("sectumsempra") || phrase.includes("slash")) { triggerSpellResult("Sectumsempra", [150, 0, 20]); }
+            else if (phrase.includes("morsmordre")) { triggerSpellResult("Morsmordre", [170, 255, 190]); }
+            else if (phrase.includes("imperio")) { triggerSpellResult("Imperio", [230, 230, 50]); }
+            else if (phrase.includes("crucio") || phrase.includes("torture")) { triggerSpellResult("Crucio", [100, 0, 0]); }
+            else if (phrase.includes("avada") || phrase.includes("kedavra") || phrase.includes("kill")) { triggerSpellResult("Avada Kedavra", [0, 150, 50]); }
+            
+            // Unknown catchall
+            else { triggerSpellResult("Unknown Spell", [75, 0, 130]); }
         }
 
         function triggerSpellResult(name, rgbColor) {
@@ -260,9 +378,7 @@
             setTimeout(() => { currentBackgroundColor = [11, 11, 20]; }, 2000);
         }
 
-        function windowResized() {
-            if (!isMobile) resizeCanvas(windowWidth, windowHeight);
-        }
+        function windowResized() { if (!isMobile) resizeCanvas(windowWidth, windowHeight); }
     </script>
 </body>
 </html>
