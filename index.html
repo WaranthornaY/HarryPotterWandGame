@@ -3,67 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hogwarts Cinematic VFX & Synth Sound Wand Engine</title>
+    <title>The Grand Sorcerer's Grimoire</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
-        body { margin: 0; background: #020205; color: white; font-family: 'Courier New', Courier, monospace; overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; }
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Goudy+Bookletter+1911&display=swap');
+
+        body { 
+            margin: 0; 
+            background: #0d0906; 
+            color: #e6dfd3; 
+            font-family: 'Goudy Bookletter 1911', serif; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+        }
         
-        #ui-layer { position: absolute; z-index: 10; text-align: center; background: rgba(3, 3, 8, 0.98); padding: 30px; border-radius: 20px; border: 2px solid #00ffcc; width: 90%; max-width: 450px; box-shadow: 0 0 40px rgba(0, 255, 204, 0.2); }
-        input, button { padding: 15px; font-size: 18px; margin: 12px 0; border-radius: 8px; border: none; text-align: center; width: 100%; box-sizing: border-box; }
-        input { background: #111; color: #00ffcc; border: 1px solid #00ffcc; font-family: monospace; }
-        button { background: #00ffcc; color: #000; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-        button:hover { background: #fff; box-shadow: 0 0 15px #00ffcc; }
-        #permission-btn { background: #ffaa00; color: #000; display: none; }
+        #ui-layer { 
+            position: absolute; 
+            z-index: 10; 
+            text-align: center; 
+            background: #1c140e; 
+            background-image: radial-gradient(rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%);
+            padding: 35px; 
+            border-radius: 4px; 
+            border: 2px solid #b8934b; 
+            width: 90%; 
+            max-width: 450px; 
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(184, 147, 75, 0.2); 
+        }
+
+        h1, h2, h3 {
+            font-family: 'Cinzel', serif;
+            letter-spacing: 2px;
+            color: #dcae5b;
+        }
+
+        input, button { 
+            padding: 15px; 
+            font-size: 18px; 
+            margin: 12px 0; 
+            border-radius: 4px; 
+            border: none; 
+            text-align: center; 
+            width: 100%; 
+            box-sizing: border-box; 
+            font-family: 'Cinzel', serif;
+        }
+
+        input { 
+            background: #0d0906; 
+            color: #e6dfd3; 
+            border: 1px solid #5a4522; 
+        }
+
+        button { 
+            background: #84231b; 
+            color: #e6dfd3; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border: 1px solid #b8934b;
+            transition: all 0.3s; 
+        }
+
+        button:hover { 
+            background: #b8934b; 
+            color: #0d0906;
+            box-shadow: 0 0 15px rgba(184, 147, 75, 0.4); 
+        }
+
+        #permission-btn { background: #b8934b; color: #0d0906; display: none; }
         
-        #wand-pad { width: 100vw; height: 100vh; display: none; background: #05050a; justify-content: center; align-items: center; flex-direction: column; touch-action: none; user-select: none; -webkit-user-select: none; }
-        #copy-btn { background: #222; color: #00ffcc; font-size: 14px; padding: 8px 12px; width: auto; display: inline-block; margin-top: 5px; border: 1px solid #00ffcc; }
-        #voice-btn { background: #ff0055; color: white; width: 80%; max-width: 250px; font-size: 22px; border-radius: 50px; box-shadow: 0 0 20px rgba(255, 0, 85, 0.5); margin-top: 20px; z-index: 20; font-family: monospace; }
-        
-        #spell-guide { display: none; position: absolute; top: 20px; right: 20px; width: 280px; max-height: 85vh; background: rgba(2, 2, 5, 0.9); border: 1px solid #00ffcc; border-radius: 12px; padding: 20px; overflow-y: auto; text-align: left; font-size: 12px; z-index: 5; box-shadow: 0 0 20px rgba(0,255,190,0.1); }
-        #spell-guide h3 { margin-top: 0; color: #00ffcc; text-align: center; border-bottom: 2px solid #00ffcc; padding-bottom: 8px; letter-spacing: 2px; }
-        .guide-item { margin: 10px 0; border-bottom: 1px dashed #222; padding-bottom: 6px; }
-        .guide-name { color: #fff; font-weight: bold; font-size: 13px; }
-        .guide-desc { color: #888; }
-        
-        #audio-notice { font-size: 12px; color: #00ffcc; margin-top: 10px; opacity: 0.8; }
+        #wand-pad { 
+            width: 100vw; 
+            height: 100vh; 
+            display: none; 
+            background: #120c08; 
+            justify-content: center; 
+            align-items: center; 
+            flex-direction: column; 
+            touch-action: none; 
+            user-select: none; 
+            -webkit-user-select: none; 
+        }
+
+        #copy-btn { background: #0d0906; color: #b8934b; font-size: 14px; padding: 8px 12px; width: auto; display: inline-block; margin-top: 5px; border: 1px solid #5a4522; }
+        #voice-btn { background: #5a1813; color: #e6dfd3; width: 85%; max-width: 280px; font-size: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); margin-top: 20px; z-index: 20; }
+        #calibrate-btn { background: #273a2a; color: #e6dfd3; width: 85%; max-width: 280px; font-size: 16px; margin-top: 10px; border: 1px solid #48694d;}
+
+        #spell-guide { 
+            display: none; 
+            position: absolute; 
+            top: 20px; 
+            right: 20px; 
+            width: 280px; 
+            max-height: 85vh; 
+            background: rgba(22, 16, 11, 0.95); 
+            border: 1px solid #b8934b; 
+            border-radius: 4px; 
+            padding: 20px; 
+            overflow-y: auto; 
+            text-align: left; 
+            font-size: 14px; 
+            z-index: 5; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
+
+        #spell-guide h3 { margin-top: 0; text-align: center; border-bottom: 2px solid #b8934b; padding-bottom: 8px; }
+        .guide-item { margin: 12px 0; border-bottom: 1px dashed #3a2e1a; padding-bottom: 6px; }
+        .guide-name { color: #dcae5b; font-weight: bold; font-family: 'Cinzel', serif; }
+        .guide-desc { color: #a49681; font-style: italic; font-size: 12px; }
     </style>
 </head>
 <body>
 
     <div id="ui-layer">
-        <h2 id="title">🔮 ARCHITECTURE LOADED...</h2>
+        <h2 id="title">✨ Awakening Grimoire...</h2>
         <div id="laptop-setup" style="display:none;">
-            <p>On your mobile wand device, navigate to your hosted URL.</p>
-            <p>Input this Secret Encryption Signature:</p>
-            <h1 id="room-id" style="color: #00ffcc; font-size: 42px; margin-bottom: 5px; user-select: text; -webkit-user-select: text; letter-spacing: 3px;">Generating...</h1>
-            <button id="copy-btn" onclick="copyRoomID()">📋 COPY LINK SIGNATURE</button>
-            <p style="margin-top: 25px; font-size: 13px; color: #666;">Awaiting peripheral hand matrix node connection...</p>
-            <p id="audio-notice">⚡ Real-time sound synthesis calibrated to unlock on execution stream!</p>
+            <p>Open this scrolls' address on your mobile device.</p>
+            <p>To bind your wooden wand core, mutter this Rune Keyword into your device:</p>
+            <h1 id="room-id" style="color: #dcae5b; font-size: 36px; margin-bottom: 5px; user-select: text; -webkit-user-select: text; font-family: 'Cinzel', serif;">Generating...</h1>
+            <button id="copy-btn" onclick="copyRoomID()">📋 Copy Rune Key</button>
+            <p style="margin-top: 25px; font-size: 14px; color: #8c7b64;">Awaiting the wave of a companion wand device...</p>
         </div>
         <div id="phone-setup" style="display:none;">
-            <button id="permission-btn" onclick="requestDeviceSensors()">1. UNLOCK MOTION SENSORS ⚡</button>
-            <input type="text" id="join-id" placeholder="PASTE MONITOR SIGNATURE">
-            <button id="connect-btn" onclick="connectToLaptop()">2. BIND WAND CORE ✨</button>
+            <button id="permission-btn" onclick="requestDeviceSensors()">1. Grant Wand Intuition ⚡</button>
+            <input type="text" id="join-id" placeholder="Enter Laptop Rune Key">
+            <button id="connect-btn" onclick="connectToLaptop()">2. Bind Wand Core ✨</button>
         </div>
     </div>
 
     <div id="spell-guide">
-        <h3>📜 COGNITIVE SPELLS</h3>
-        <div class="guide-item"><span class="guide-name">Lumos</span><br><span class="guide-desc">Stuck white dwarf orb + 120Hz oscillating engine hum</span></div>
-        <div class="guide-item"><span class="guide-name">Nox</span><br><span class="guide-desc">De-materializes ambient lumos trails + falling sweep discharge</span></div>
-        <div class="guide-item"><span class="guide-name">Avada Kedavra</span><br><span class="guide-desc">Fractured emerald plasma arc lines + low-pass noise thunder strike</span></div>
-        <div class="guide-item"><span class="guide-name">Protego</span><br><span class="guide-desc">Concentric vector force shields + frequency-modulated sonic echo deflector</span></div>
-        <div class="guide-item"><span class="guide-name">Incendio</span><br><span class="guide-desc">Volumetric thermodynamics smoke engine + roaring continuous combustion draft</span></div>
-        <div class="guide-item"><span class="guide-name">Expecto Patronum</span><br><span class="guide-desc">Expanding interstellar stardust swirl + high resonance shimmer sweep</span></div>
-        <div class="guide-item"><span class="guide-name">Stupefy</span><br><span class="guide-desc">High velocity ruby kinetic compression beam + laser pressure burst</span></div>
-        <div class="guide-item"><span class="guide-name">Expelliarmus</span><br><span class="guide-desc">Expanding shockwave radial rings + subsonic structural frequency thump</span></div>
+        <h3>📜 Spell Arcana</h3>
+        <div class="guide-item"><span class="guide-name">Lumos</span><br><span class="guide-desc">Summons a warm, shimmering orb of pure starlight accompanied by a deep rhythmic hum.</span></div>
+        <div class="guide-item"><span class="guide-name">Nox</span><br><span class="guide-desc">Extinguishes the star light with a sudden wind swoosh.</span></div>
+        <div class="guide-item"><span class="guide-name">Avada Kedavra</span><br><span class="guide-desc">Unleashes jagged emerald plasma fractures across the screen with a booming rumble.</span></div>
+        <div class="guide-item"><span class="guide-name">Protego</span><br><span class="guide-desc">Weaves shimmering layered protection rings that deflect magical trajectories.</span></div>
+        <div class="guide-item"><span class="guide-name">Incendio</span><br><span class="guide-desc">Ignites roaring flame embers that twist and float upwards into dark smoke.</span></div>
+        <div class="guide-item"><span class="guide-name">Expecto Patronum</span><br><span class="guide-desc">Swirls an ethereal silver-blue cosmos vortex around the wand tip.</span></div>
+        <div class="guide-item"><span class="guide-name">Stupefy</span><br><span class="guide-desc">Fires a concentrated red plasma bolt that bursts on impact.</span></div>
+        <div class="guide-item"><span class="guide-name">Expelliarmus</span><br><span class="guide-desc">Expels a violent crimson shockwave ring expanding outwards.</span></div>
     </div>
 
     <div id="wand-pad">
-        <h1 id="wand-status" style="color: #333; letter-spacing: 2px;">NODE DISCONNECTED</h1>
-        <p style="color: #666; text-align: center; padding: 0 20px; font-size: 14px; text-transform: uppercase;">Maintain compression touch to paint trajectory patterns. Tap below to speak voice spell matrix keys.</p>
-        <button id="voice-btn" onclick="startVoiceRecognition()">🎙️ COMMENCE INCANTATION</button>
+        <h2 id="wand-status" style="color: #5a4522;">Wand Sleep State</h2>
+        <p style="color: #8c7b64; text-align: center; padding: 0 20px; font-size: 14px;">Hold screen to draw tracking arcs.<br>Point at screen and tap calibrate if it drifts.</p>
+        <button id="voice-btn" onclick="startVoiceRecognition()">🎙️ Incantation</button>
+        <button id="calibrate-btn" onclick="sendCalibrationTrigger()">🎯 Calibrate Wand Position</button>
     </div>
 
     <script>
@@ -79,9 +168,10 @@
         let isLumosActive = false;
         let particles = [];
 
-        let lastPitch = null, lastRoll = null;
+        // Dynamic Automatic Calibration Fields
+        let basePitch = null, baseRoll = null;
+        let autoCalibrated = false;
 
-        // WEB AUDIO API NATIVE SOUND GENERATION FIELDS
         let audioCtx = null;
         let lumosOscillator = null;
         let lumosGainNode = null;
@@ -99,13 +189,13 @@
         window.onload = function() {
             peer = new Peer();
             if (isMobile) {
-                document.getElementById('title').innerText = "🧙‍♂️ CONTROL TERMINAL";
+                document.getElementById('title').innerText = "🧙‍♂️ Wand Handle Core";
                 document.getElementById('phone-setup').style.display = "block";
                 if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
                     document.getElementById('permission-btn').style.display = "block";
                 }
             } else {
-                document.getElementById('title').innerText = "🏰 MONITOR GRAPHICS ENGINE";
+                document.getElementById('title').innerText = "🏰 Mirror Grimoire Screen";
                 document.getElementById('laptop-setup').style.display = "block";
                 
                 peer.on('open', (id) => { document.getElementById('room-id').innerText = id; });
@@ -118,9 +208,9 @@
             }
         };
 
-        // --- INTERNAL LIVE SYNTHESIS AUDIO HARDWARE ENGINE ---
+        // --- MYSTICAL SYNTH SOUND GENERATOR ---
         function initAudioHardware() {
-            if (audioCtx) return; // Prevent double instantiation context loops
+            if (audioCtx) return;
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
 
@@ -131,8 +221,8 @@
             let now = audioCtx.currentTime;
 
             if (type === "avadakedavra") {
-                // Procedural Synthesis: Explosive Low Pass Noise Generation
-                let bufferSize = audioCtx.sampleRate * 0.4; 
+                // Dark mystical thunder crackle
+                let bufferSize = audioCtx.sampleRate * 0.6; 
                 let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 let data = buffer.getChannelData(0);
                 for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
@@ -142,148 +232,106 @@
 
                 let filter = audioCtx.createBiquadFilter();
                 filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(800, now);
-                filter.frequency.exponentialRampToValueAtTime(10, now + 0.35);
+                filter.frequency.setValueAtTime(400, now);
+                filter.frequency.exponentialRampToValueAtTime(30, now + 0.5);
 
                 let gain = audioCtx.createGain();
-                gain.gain.setValueAtTime(1.5, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.38);
+                gain.gain.setValueAtTime(1.8, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
 
-                noiseNode.connect(filter);
-                filter.connect(gain);
-                gain.connect(audioCtx.destination);
+                noiseNode.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
                 noiseNode.start(now);
-                
-                // High Pitch Crackle Overlay Ring
-                let sharpOsc = audioCtx.createOscillator();
-                let sharpGain = audioCtx.createGain();
-                sharpOsc.type = "sawtooth";
-                sharpOsc.frequency.setValueAtTime(120, now);
-                sharpOsc.frequency.linearRampToValueAtTime(30, now + 0.2);
-                sharpGain.gain.setValueAtTime(0.3, now);
-                sharpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                sharpOsc.connect(sharpGain);
-                sharpGain.connect(audioCtx.destination);
-                sharpOsc.start(now); sharpOsc.stop(now + 0.2);
             }
             else if (type === "protego") {
-                // FM Ring modulation sweeping upward swiftly to simulate a energy deflection dome
+                // Glassy, musical resonant chime chord
+                [440, 554, 659].forEach(freq => {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = "sine";
+                    osc.frequency.setValueAtTime(freq, now);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                    osc.connect(gain); gain.connect(audioCtx.destination);
+                    osc.start(now); osc.stop(now + 0.5);
+                });
+            }
+            else if (type === "stupefy") {
+                // Quick whipping frequency punch
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
                 osc.type = "triangle";
-                osc.frequency.setValueAtTime(150, now);
-                osc.frequency.exponentialRampToValueAtTime(1800, now + 0.25);
-                
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.2);
                 gain.gain.setValueAtTime(0.6, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
                 osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(now); osc.stop(now + 0.3);
-            }
-            else if (type === "stupefy") {
-                // Concentrated rapid laser blast wave
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.type = "sawtooth";
-                osc.frequency.setValueAtTime(880, now);
-                osc.frequency.linearRampToValueAtTime(220, now + 0.15);
-                
-                gain.gain.setValueAtTime(0.5, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
-                
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(now); osc.stop(now + 0.2);
+                osc.start(now); osc.stop(now + 0.25);
             }
             else if (type === "expelliarmus") {
-                // Subsonic sine wave frequency thumb dump drop
+                // Deep, ominous bass drum boom
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
                 osc.type = "sine";
-                osc.frequency.setValueAtTime(90, now);
-                osc.frequency.linearRampToValueAtTime(20, now + 0.4);
-                
-                gain.gain.setValueAtTime(2.0, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-                
+                osc.frequency.setValueAtTime(80, now);
+                osc.frequency.exponentialRampToValueAtTime(10, now + 0.4);
+                gain.gain.setValueAtTime(2.5, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
                 osc.connect(gain); gain.connect(audioCtx.destination);
                 osc.start(now); osc.stop(now + 0.5);
             }
             else if (type === "incendio") {
-                // Synthesized thermal roaring draft
-                let bufferSize = audioCtx.sampleRate * 0.5;
+                // Sustained roaring wind crackle
+                let bufferSize = audioCtx.sampleRate * 0.4;
                 let buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
                 let data = buffer.getChannelData(0);
                 for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
                 let noise = audioCtx.createBufferSource();
                 noise.buffer = buffer;
-                
                 let filter = audioCtx.createBiquadFilter();
-                filter.type = 'bandpass';
-                filter.frequency.setValueAtTime(300, now);
-                
+                filter.type = 'bandpass'; filter.frequency.setValueAtTime(250, now);
                 let gain = audioCtx.createGain();
-                gain.gain.setValueAtTime(0.8, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
-                
+                gain.gain.setValueAtTime(0.7, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
                 noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
                 noise.start(now);
             }
             else if (type === "expectopatronum") {
-                // Ethereal crystalline high sweep
+                // Shimmering musical celestial sweep
                 let osc = audioCtx.createOscillator();
                 let gain = audioCtx.createGain();
                 osc.type = "sine";
-                osc.frequency.setValueAtTime(1200, now);
-                osc.frequency.exponentialRampToValueAtTime(3000, now + 0.6);
-                
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-                
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1800, now + 0.8);
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
                 osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(now); osc.stop(now + 0.75);
+                osc.start(now); osc.stop(now + 0.9);
             }
             else if (type === "lumos_on") {
                 if (lumosOscillator) return;
                 lumosOscillator = audioCtx.createOscillator();
                 lumosGainNode = audioCtx.createGain();
-                
                 lumosOscillator.type = "sine";
-                // Low frequency electrical hum oscillation tracking array
-                lumosOscillator.frequency.setValueAtTime(110, now); 
-                lumosGainNode.gain.setValueAtTime(0.4, now);
+                lumosOscillator.frequency.setValueAtTime(130, now); 
+                lumosGainNode.gain.setValueAtTime(0.3, now);
                 
-                // Add tiny pitch lfo variance modulation
                 let lfo = audioCtx.createOscillator();
                 let lfoGain = audioCtx.createGain();
-                lfo.frequency.setValueAtTime(6, now); 
-                lfoGain.gain.setValueAtTime(4, now); 
+                lfo.frequency.setValueAtTime(4, now); 
+                lfoGain.gain.setValueAtTime(5, now); 
                 lfo.connect(lfoGain); lfoGain.connect(lumosOscillator.frequency);
                 
-                lumosOscillator.connect(lumosGainNode);
-                lumosGainNode.connect(audioCtx.destination);
-                
-                lfo.start(now);
-                lumosOscillator.start(now);
+                lumosOscillator.connect(lumosGainNode); lumosGainNode.connect(audioCtx.destination);
+                lfo.start(now); lumosOscillator.start(now);
             }
             else if (type === "lumos_off") {
                 if (lumosOscillator) {
                     try {
                         lumosGainNode.gain.setValueAtTime(lumosGainNode.gain.value, now);
-                        lumosGainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-                        lumosOscillator.stop(now + 0.16);
+                        lumosGainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                        lumosOscillator.stop(now + 0.21);
                     } catch(e){}
                     lumosOscillator = null; lumosGainNode = null;
                 }
-                // Generate a brief system discharge zip
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                osc.type = "sawtooth";
-                osc.frequency.setValueAtTime(220, now);
-                osc.frequency.linearRampToValueAtTime(50, now + 0.1);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-                osc.connect(gain); gain.connect(audioCtx.destination);
-                osc.start(now); osc.stop(now + 0.11);
             }
         }
 
@@ -292,8 +340,8 @@
             if(roomIdText && roomIdText !== "Generating...") {
                 navigator.clipboard.writeText(roomIdText);
                 let btn = document.getElementById('copy-btn');
-                btn.innerText = "📋 COPIED SECURE MATRIX";
-                setTimeout(() => { btn.innerText = "📋 COPY LINK SIGNATURE"; }, 2000);
+                btn.innerText = "✅ Scroll Signature Copied";
+                setTimeout(() => { btn.innerText = "📋 Copy Rune Key"; }, 2000);
             }
         }
 
@@ -302,8 +350,8 @@
                 DeviceOrientationEvent.requestPermission()
                     .then(state => {
                         if (state === 'granted') {
-                            document.getElementById('permission-btn').style.background = "#555";
-                            document.getElementById('permission-btn').innerText = "SENSORS GRANTED ✅";
+                            document.getElementById('permission-btn').style.background = "#48694d";
+                            document.getElementById('permission-btn').innerText = "Wand Attuned ✅";
                         }
                     }).catch(console.error);
             }
@@ -315,8 +363,8 @@
             conn.on('open', () => {
                 document.getElementById('ui-layer').style.display = "none";
                 document.getElementById('wand-pad').style.display = "flex";
-                document.getElementById('wand-status').innerText = "WAND NODE LINKED ✨";
-                document.getElementById('wand-status').style.color = "#00ffcc";
+                document.getElementById('wand-status').innerText = "WAND INTUITION BOUND 🌟";
+                document.getElementById('wand-status').style.color = "#dcae5b";
                 setupPhoneSensors();
                 setupVoiceEngine();
             });
@@ -325,13 +373,13 @@
         function setupVoiceEngine() {
             if (!recognition) return;
             recognition.onstart = function() {
-                document.getElementById('wand-status').innerText = "RECORDING AUDIO FIELD... 📻";
-                document.getElementById('wand-status').style.color = "#ff0055";
+                document.getElementById('wand-status').innerText = "MUTER WORDS NOW... 📻";
+                document.getElementById('wand-status').style.color = "#84231b";
             };
             recognition.onspeechend = function() { recognition.stop(); };
             recognition.onerror = function() {
-                document.getElementById('wand-status').innerText = "AUDIO DESYNC RE-TRY!";
-                document.getElementById('wand-status').style.color = "#ffaa00";
+                document.getElementById('wand-status').innerText = "Wand Misunderstood";
+                document.getElementById('wand-status').style.color = "#5a4522";
                 resetWandStatusDelay();
             };
             recognition.onresult = function(event) {
@@ -346,22 +394,28 @@
             if (recognition) recognition.start();
         }
 
+        function sendCalibrationTrigger() {
+            autoCalibrated = false; // Forces recalculation on the next sensor loop tick
+            document.getElementById('wand-status').innerText = "🎯 RE-CALIBRATING CENTER...";
+            resetWandStatusDelay();
+        }
+
         function resetWandStatusDelay() {
             setTimeout(() => {
-                document.getElementById('wand-status').innerText = "WAND NODE LINKED ✨";
-                document.getElementById('wand-status').style.color = "#00ffcc";
-            }, 2000);
+                document.getElementById('wand-status').innerText = "WAND INTUITION BOUND 🌟";
+                document.getElementById('wand-status').style.color = "#dcae5b";
+            }, 1500);
         }
 
         function setupPhoneSensors() {
             let wandPad = document.getElementById('wand-pad');
             wandPad.addEventListener('touchstart', (e) => { 
-                if (e.target.id === "voice-btn") return;
+                if (e.target.tagName === "BUTTON") return;
                 e.preventDefault();
                 conn.send({ type: "draw_state", drawing: true }); 
             });
             wandPad.addEventListener('touchend', (e) => { 
-                if (e.target.id === "voice-btn") return;
+                if (e.target.tagName === "BUTTON") return;
                 e.preventDefault();
                 conn.send({ type: "draw_state", drawing: false }); 
             });
@@ -370,24 +424,32 @@
                 if (conn && conn.open) {
                     let currentPitch = event.beta;  
                     let currentRoll = event.gamma;   
-                    if (lastPitch === null) lastPitch = currentPitch;
-                    if (lastRoll === null) lastRoll = currentRoll;
 
-                    let deltaRoll = currentRoll - lastRoll;
-                    let deltaPitch = currentPitch - lastPitch;
+                    // --- TRUE ABSOLUTE AUTO-CALIBRATION SYSTEM ---
+                    // Snap current tilt angles as 0,0 starting coordinate matrix
+                    if (!autoCalibrated) {
+                        basePitch = currentPitch;
+                        baseRoll = currentRoll;
+                        autoCalibrated = true;
+                        conn.send({ type: "force_recenter" });
+                    }
 
-                    if (Math.abs(deltaRoll) > 50) deltaRoll = 0;
-                    if (Math.abs(deltaPitch) > 50) deltaPitch = 0;
+                    // Calculate displacement from your custom calibrated center position
+                    let deviationRoll = currentRoll - baseRoll;
+                    let deviationPitch = currentPitch - basePitch;
 
-                    conn.send({ type: "angle_delta", dRoll: deltaRoll, dPitch: deltaPitch });
-                    lastPitch = currentPitch; lastRoll = currentRoll;
+                    // Handle edge flips smoothly
+                    if (deviationRoll > 180) deviationRoll -= 360;
+                    if (deviationRoll < -180) deviationRoll += 360;
+
+                    conn.send({ type: "absolute_tracking", rollPos: deviationRoll, pitchPos: deviationPitch });
                 }
             });
 
             conn.on('data', (data) => {
                 if (data.type === "spell_success") {
-                    document.getElementById('wand-status').innerText = data.spellName.toUpperCase() + "!";
-                    if (navigator.vibrate) { navigator.vibrate([80, 40, 80]); }
+                    document.getElementById('wand-status').innerText = data.spellName + "!";
+                    if (navigator.vibrate) { navigator.vibrate([60, 30, 60]); }
                     resetWandStatusDelay();
                 }
             });
@@ -396,13 +458,20 @@
         function setupDataListeners() {
             handX = width / 2; handY = height / 2;
             conn.on('data', (data) => {
+                if (data.type === "force_recenter") {
+                    handX = width / 2;
+                    handY = height / 2;
+                }
                 if (data.type === "draw_state") {
                     isPhoneDrawing = data.drawing;
                     if (!isPhoneDrawing) evaluateSpell(); 
                 }
-                if (data.type === "angle_delta") {
-                    handX += data.dRoll * 5.5;
-                    handY -= data.dPitch * 5.5; 
+                if (data.type === "absolute_tracking") {
+                    // Absolute positional calculation mapped cleanly to monitor dimensions
+                    // Multipliers adjusted down for soft, smooth organic pointing motion
+                    handX = (width / 2) + (data.rollPos * 25);
+                    handY = (height / 2) + (data.pitchPos * 20); 
+
                     handX = constrain(handX, 0, width);
                     handY = constrain(handY, 0, height);
                     if (isPhoneDrawing) spellTrail.push({ x: handX, y: handY });
@@ -414,38 +483,39 @@
         function setup() {
             if (!isMobile) {
                 createCanvas(windowWidth, windowHeight);
-                // Attach a native CSS drop shadow canvas filter injection for heavy ambient bloom
                 let canvasElement = document.getElementsByClassName('p5Canvas')[0];
                 if(canvasElement) {
-                    canvasElement.style.filter = "drop-shadow(0px 0px 25px rgba(0, 255, 204, 0.45))";
+                    canvasElement.style.filter = "drop-shadow(0px 0px 35px rgba(220, 174, 91, 0.3))";
                 }
             } else {
                 noCanvas();
             }
         }
 
-        // --- MASTER HIGH FIDELITY RENDER COMPONENT LOOP ---
         function draw() {
             if (isMobile) return;
-            background(3, 3, 7);
+            // Ancient cosmic night backdrop
+            background(10, 7, 5);
 
             let baseWandX = width / 2;
-            let baseWandY = height + 20;
+            let baseWandY = height + 30;
             let angle = atan2(handY - baseWandY, handX - baseWandX);
-            let lengthWand = 320;
+            let lengthWand = 340;
             let tipWandX = baseWandX + cos(angle) * lengthWand;
             let tipWandY = baseWandY + sin(angle) * lengthWand;
 
-            // Draw Wood Wand Core Structure Assembly
-            strokeWeight(14); stroke(28, 18, 12);
-            line(baseWandX, baseWandY, baseWandX + cos(angle)*80, baseWandY + sin(angle)*80);
-            strokeWeight(8); stroke(54, 38, 27);
-            line(baseWandX + cos(angle)*80, baseWandY + sin(angle)*80, tipWandX, tipWandY);
-            // Core Tip Node Filament Highlight
-            fill(255, 255, 255, 180); noStroke();
-            circle(tipWandX, tipWandY, 6);
+            // Draw Old Polished Mahogany Wood Wand Structure
+            strokeWeight(16); stroke(23, 13, 7);
+            line(baseWandX, baseWandY, baseWandX + cos(angle)*90, baseWandY + sin(angle)*90);
+            strokeWeight(8); stroke(46, 29, 17);
+            line(baseWandX + cos(angle)*90, baseWandY + sin(angle)*90, tipWandX, tipWandY);
+            
+            // Ornate Gold Filigree Wand Tip Ferrule
+            strokeWeight(9); stroke(184, 147, 75);
+            line(tipWandX - cos(angle)*12, tipWandY - sin(angle)*12, tipWandX, tipWandY);
+            fill(255, 248, 220, 220); noStroke();
+            circle(tipWandX, tipWandY, 5);
 
-            // Compute physics array frame slices
             if (effectTimer > 0) {
                 generateSpellParticles(currentActiveSpell, tipWandX, tipWandY);
                 effectTimer--;
@@ -455,7 +525,6 @@
 
             if (isLumosActive) { generateSpellParticles("lumos", tipWandX, tipWandY); }
 
-            // Step, clean, render variable alpha physics elements
             for (let i = particles.length - 1; i >= 0; i--) {
                 let p = particles[i];
                 p.update();
@@ -465,14 +534,14 @@
 
             if (effectTimer > 0) { renderComplexVFXOverlay(currentActiveSpell, tipWandX, tipWandY); }
 
-            // Reticle Target Node Tracker
-            stroke(0, 255, 204, 80); strokeWeight(1); noFill();
-            circle(handX, handY, 18);
-            fill(255, 255, 255, 200); noStroke();
-            circle(handX, handY, 4);
+            // Antique circular crosshair ring
+            stroke(184, 147, 75, 45); strokeWeight(1.5); noFill();
+            circle(handX, handY, 24);
+            stroke(184, 147, 75, 25); circle(handX, handY, 8);
+            fill(220, 174, 91, 140); noStroke();
+            circle(handX, handY, 3);
         }
 
-        // --- VARIABLE TRANSPARENCY ADVANCED PHYSICS PARTICLE CLASS ---
         class SpellParticle {
             constructor(x, y, vx, vy, r, g, b, size, lifeSpan, behavior="rise") {
                 this.x = x; this.y = y;
@@ -485,30 +554,29 @@
             }
             update() {
                 this.x += this.vx; this.y += this.vy;
-                this.life -= 3.5;
+                this.life -= 3.0;
                 this.size = map(this.life, 0, this.maxLife, 0, this.maxSize);
                 
                 if (this.behavior === "rise") {
-                    this.vy -= 0.15;
-                    this.vx += sin(frameCount * 0.1 + this.noiseOffset) * 0.2; // Thermal drift swaying curves
+                    this.vy -= 0.12;
+                    this.vx += sin(frameCount * 0.08 + this.noiseOffset) * 0.25;
                 }
                 if (this.behavior === "vortex") {
-                    let angleSpeed = 0.22;
+                    let angleSpeed = 0.18;
                     let speed = dist(0, 0, this.vx, this.vy);
                     let curAngle = atan2(this.vy, this.vx) + angleSpeed;
-                    this.vx = cos(curAngle) * speed * 0.97;
-                    this.vy = sin(curAngle) * speed * 0.97;
+                    this.vx = cos(curAngle) * speed * 0.96;
+                    this.vy = sin(curAngle) * speed * 0.96;
                 }
             }
             display() {
                 if (this.life <= 0) return;
-                push();
-                noStroke();
-                // Layered alpha compounding yields a high fidelity cinematic glow look
-                fill(this.r, this.g, this.b, map(this.life, 0, this.maxLife, 0, 255));
+                push(); noStroke();
+                // Alchemical color blends
+                fill(this.r, this.g, this.b, map(this.life, 0, this.maxLife, 0, 200));
                 circle(this.x, this.y, this.size);
-                fill(255, 255, 255, map(this.life, 0, this.maxLife, 0, 180));
-                circle(this.x, this.y, this.size * 0.45);
+                fill(255, 250, 230, map(this.life, 0, this.maxLife, 0, 150));
+                circle(this.x, this.y, this.size * 0.35);
                 pop();
             }
             isDead() { return this.life <= 0; }
@@ -516,72 +584,68 @@
 
         function generateSpellParticles(type, tx, ty) {
             if (type === "incendio") {
-                for (let i = 0; i < 6; i++) {
-                    particles.push(new SpellParticle(tx, ty, random(-3, 3), random(-4, -0.5), 255, random(60, 150), 10, random(20, 40), 255, "rise"));
+                for (let i = 0; i < 5; i++) {
+                    // Deep volcanic sulfur orange sparks
+                    particles.push(new SpellParticle(tx, ty, random(-2.5, 2.5), random(-3.5, -0.5), 212, random(80, 110), 32, random(18, 35), 255, "rise"));
                 }
             }
             else if (type === "expectopatronum") {
-                for (let i = 0; i < 8; i++) {
-                    let angle = random(TWO_PI); let speed = random(4, 11);
-                    particles.push(new SpellParticle(tx, ty, cos(angle)*speed, sin(angle)*speed, 160, 235, 255, random(12, 30), 220, "vortex"));
+                for (let i = 0; i < 7; i++) {
+                    let angle = random(TWO_PI); let speed = random(3, 9);
+                    // Silvery stardust cosmic blue elements
+                    particles.push(new SpellParticle(tx, ty, cos(angle)*speed, sin(angle)*speed, 180, 215, 240, random(10, 26), 220, "vortex"));
                 }
             }
             else if (type === "lumos") {
-                if (random(1) < 0.6) {
-                    particles.push(new SpellParticle(tx + random(-6,6), ty + random(-6,6), random(-0.8, 0.8), random(-0.8, 0.8), 240, 250, 255, random(12, 24), 120, "rise"));
+                if (random(1) < 0.5) {
+                    // Soft warm ambient candle-like glow
+                    particles.push(new SpellParticle(tx + random(-5,5), ty + random(-5,5), random(-0.6, 0.6), random(-0.6, 0.6), 255, 235, 180, random(10, 20), 120, "rise"));
                 }
             }
         }
 
-        // --- PROCEDURAL RE-RENDERING MECHANIC OVERLAYS ---
         function renderComplexVFXOverlay(type, tx, ty) {
             push();
             if (type === "avadakedavra") {
-                // Procedural Perlin-esque Fractal Lightning generation algorithm
-                stroke(0, 255, 120); strokeWeight(random(5, 10)); noFill();
+                // Organic erratic fractured lightning pathing
+                stroke(26, 180, 85); strokeWeight(random(4, 9)); noFill();
                 let curX = tx; let curY = ty;
-                let steps = 16; // Increased resolution complexity slices
+                let steps = 15;
                 beginShape(); vertex(curX, curY);
                 for (let i = 1; i <= steps; i++) {
                     let t = i / steps;
                     let targetXPoint = lerp(tx, handX, t);
                     let targetYPoint = lerp(ty, handY, t);
                     if (i < steps) {
-                        // High deviation offsets simulate highly unstable destructive kinetic energy paths
-                        curX = targetXPoint + random(-45, 45); 
-                        curY = targetYPoint + random(-45, 45);
+                        curX = targetXPoint + random(-40, 40); 
+                        curY = targetYPoint + random(-40, 40);
                     } else {
                         curX = handX; curY = handY;
                     }
                     vertex(curX, curY);
                 }
                 endShape();
-                
-                // Hot White Incandescent Internal Plasma Vector Core Line
-                stroke(255,255,255); strokeWeight(3); line(tx, ty, handX, handY);
-                // Flash Terminal Focal Ring Point
-                fill(0, 255, 120, 100); noStroke(); circle(handX, handY, random(50, 90));
+                stroke(240, 255, 240); strokeWeight(2.5); line(tx, ty, handX, handY);
             }
             else if (type === "protego") {
                 noFill();
-                // Concentric layered vector force geometry shells shifting along sin loops
-                for (let i = 0; i < 5; i++) {
-                    stroke(0, 210, 255, map(i, 0, 5, 15, 110)); 
-                    strokeWeight(random(3, 6));
-                    let waveSize = 140 + sin(frameCount * 0.28 + i * 0.8)*25;
-                    fill(0, 150, 255, 2);
+                // Shimmering mystical energy containment barriers
+                for (let i = 0; i < 4; i++) {
+                    stroke(140, 190, 212, map(i, 0, 4, 10, 95)); 
+                    strokeWeight(3);
+                    let waveSize = 130 + sin(frameCount * 0.2 + i * 0.9)*20;
                     circle(handX, handY, waveSize);
                 }
             }
             else if (type === "stupefy") {
-                // Searing Ruby Over-Saturated Laser Compression Blast
-                stroke(255, 0, 70, 240); strokeWeight(20); line(tx, ty, handX, handY);
-                stroke(255, 255, 255); strokeWeight(6); line(tx, ty, handX, handY);
-                fill(255, 30, 80); noStroke(); circle(handX, handY, random(50, 85));
+                // Searing bright ruby magic jet
+                stroke(165, 28, 28, 220); strokeWeight(16); line(tx, ty, handX, handY);
+                stroke(255, 230, 230); strokeWeight(4); line(tx, ty, handX, handY);
+                fill(195, 35, 35); noStroke(); circle(handX, handY, random(45, 75));
             }
             else if (type === "expelliarmus") {
-                noFill(); stroke(255, 50, 50, 220); strokeWeight(14);
-                let shockwaveDiameter = map(effectTimer, 45, 0, 10, width * 0.7);
+                noFill(); stroke(132, 35, 27, 200); strokeWeight(12);
+                let shockwaveDiameter = map(effectTimer, 45, 0, 10, width * 0.65);
                 circle(tx, ty, shockwaveDiameter);
             }
             pop();
